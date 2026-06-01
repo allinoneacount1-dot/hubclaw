@@ -2,12 +2,13 @@
   "version": 2,
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
-  "rewrites": [
-    { "source": "/api/health", "destination": "/api/index.js" },
-    { "source": "/api/run", "destination": "/api/index.js" },
-    { "source": "/api/models", "destination": "/api/index.js" },
-    { "source": "/api/agents", "destination": "/api/index.js" },
-    { "source": "/api/analytics/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/favicon.svg", "dest": "/favicon.svg" },
+    { "src": "/logo.png", "dest": "/logo.png" },
+    { "src": "/logo.jpg", "dest": "/logo.jpg" },
+    { "src": "/icons.svg", "dest": "/icons.svg" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
