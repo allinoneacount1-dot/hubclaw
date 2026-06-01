@@ -1,11 +1,11 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const SB_URL = process.env.SUPABASE_URL || '';
 const SB_ANON = process.env.SUPABASE_ANON_KEY || '';
-const SB_SERVICE = process.env.SUPABASE_SERVICE_KEY || '';
 const OR_KEY = process.env.OPENROUTER_API_KEY || '';
 const MOCK = process.env.MOCK_AI === 'true';
 const ANON = process.env.ALLOW_ANON === 'true';
+const DEF_MODEL = 'nvidia/nemotron-4-340b-instruct:free';
 
 const supabase = createClient(SB_URL, SB_ANON);
 
@@ -18,87 +18,88 @@ const MODELS = {
   'claude-opus-4': 'meta-llama/llama-3.1-70b-instruct:free',
   'gpt-4o': 'deepseek/deepseek-r1:free',
   'gpt-4o-mini': 'qwen/qwen-2-7b-instruct:free',
+  'deepseek-v3': 'deepseek/deepseek-r1:free',
   'deepseek-r1': 'deepseek/deepseek-r1:free',
   'owl-alpha': 'openrouter/owl-alpha:free',
   'nemotron': 'nvidia/nemotron-4-340b-instruct:free',
 };
-const DEF_MODEL = 'nvidia/nemotron-4-340b-instruct:free';
-const FALLBACKS = ['nvidia/nemotron-4-340b-instruct:free','google/gemini-2.0-flash-exp:free','deepseek/deepseek-r1:free','meta-llama/llama-3.1-70b-instruct:free','mistralai/mistral-7b-instruct:free'];
+
+const FALLBACKS = [
+  'nvidia/nemotron-4-340b-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
+  'deepseek/deepseek-r1:free',
+  'meta-llama/llama-3.1-70b-instruct:free',
+  'mistralai/mistral-7b-instruct:free',
+];
 
 function resolveModel(m) { return MODELS[m] || (m && m.includes('/') ? m : DEF_MODEL); }
 
 async function callOR(key, msgs, model, temp, max) {
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`, 'HTTP-Referer': 'https://hubclaw.vercel.app', 'X-Title': 'HubClaw' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key, 'HTTP-Referer': 'https://hubclaw.vercel.app', 'X-Title': 'HubClaw' },
     body: JSON.stringify({ model, messages: msgs, temperature: temp, max_tokens: max }),
   });
-  if (!r.ok) throw new Error(`OR ${r.status}: ${await r.text().catch(()=>'?')}`);
+  if (!r.ok) throw new Error('OR ' + r.status + ': ' + await r.text().catch(() => '?'));
   const d = await r.json();
-  return { text: d.choices[0].message.content || '', tokens: d.usage?.total_tokens || 0, model: d.model || model };
+  return { text: (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '', tokens: (d.usage && d.usage.total_tokens) || 0, model: d.model || model };
 }
 
 async function runAI(prompt, sys, model, temp, max, key) {
   if (MOCK || !key) {
     await new Promise(r => setTimeout(r, 400));
-    return { text: `🤖 [Mock Mode] Processed: "${prompt.slice(0,60)}..." | Model: ${model} | temp=${max} | Set OPENROUTER_API_KEY for real AI`, tokens: 50, model };
+    return { text: '🤖 [Mock] Processed: "' + prompt.slice(0, 60) + '...' | Model: ' + model + ' | Set OPENROUTER_API_KEY for real AI', tokens: 50, model: model };
   }
   const msgs = [];
   if (sys) msgs.push({ role: 'system', content: sys });
   msgs.push({ role: 'user', content: prompt });
-  const chain = [resolveModel(model), ...FALLBACKS].filter((m,i,a) => a.indexOf(m) === i);
+  const chain = [resolveModel(model), ...FALLBACKS].filter((m, i, a) => a.indexOf(m) === i);
   let lastErr;
   for (const m of chain) {
     try { return await callOR(key, msgs, m, temp, max); }
-    catch(e) { lastErr = e; if (e.message?.includes('429') || e.message?.includes('404')) continue; throw e; }
+    catch (e) { lastErr = e; if (e.message && (e.message.includes('429') || e.message.includes('404') || e.message.includes('503'))) continue; throw e; }
   }
   throw lastErr;
 }
 
-async function uid(req) {
+async function getUID(req) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return null;
-  try { const { data } = await supabase.auth.getUser(h.split(' ')[1]); return data.user?.id || null; } catch { return null; }
+  try { const { data } = await supabase.auth.getUser(h.split(' ')[1]); return data.user && data.user.id || null; } catch (e) { return null; }
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
-
   const path = (req.url || '').split('?')[0];
-
   try {
-    if (path === '/api/health') {
-      return res.json({ status: 'ok', time: new Date().toISOString(), ai: OR_KEY ? 'openrouter' : 'mock', sb: SB_URL ? 'ok' : 'no' });
-    }
-
-    if (path === '/api/models') {
-      return res.json({ models: [
-        { id: 'nvidia/nemotron-4-340b-instruct:free', name: 'Nemotron 4 340B' },
-        { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash' },
-        { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1' },
-        { id: 'meta-llama/llama-3.1-70b-instruct:free', name: 'Llama 3.1 70B' },
-        { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B' },
-        { id: 'openrouter/owl-alpha:free', name: 'OWL Alpha' },
-      ]});
-    }
+    if (path === '/api/health') return res.json({ status: 'ok', time: new Date().toISOString(), ai: OR_KEY ? 'openrouter' : 'mock', sb: SB_URL ? 'ok' : 'no' });
+    
+    if (path === '/api/models') return res.json({ models: [
+      { id: 'nvidia/nemotron-4-340b-instruct:free', name: 'Nemotron 4 340B' },
+      { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash' },
+      { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1' },
+      { id: 'meta-llama/llama-3.1-70b-instruct:free', name: 'Llama 3.1 70B' },
+      { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B' },
+      { id: 'openrouter/owl-alpha:free', name: 'OWL Alpha' },
+    ]});
 
     if (path === '/api/run' && req.method === 'POST') {
       const t0 = Date.now();
-      const userId = (await uid(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
+      const userId = (await getUID(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
       if (!userId) return res.status(401).json({ error: 'Auth required' });
-      const { agentId, systemPrompt, userMessage, modelEngine, temperature, maxTokens } = req.body || {};
-      if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+      const body = req.body || {};
+      if (!body.userMessage) return res.status(400).json({ error: 'userMessage required' });
       let apiKey = OR_KEY;
       const { data: prof } = await supabase.from('profiles').select('openrouter_api_key').eq('id', userId).single();
       if (prof && prof.openrouter_api_key) apiKey = prof.openrouter_api_key;
       let agentCfg = {};
-      if (agentId) { const { data } = await supabase.from('agents').select('*').eq('id', agentId).single(); if (data) agentCfg = data; }
-      const result = await runAI(userMessage, systemPrompt || agentCfg.system_prompt || '', modelEngine || agentCfg.model_engine || DEF_MODEL, temperature ?? agentCfg.temperature ?? 0.7, maxTokens ?? agentCfg.max_tokens ?? 2048, apiKey);
+      if (body.agentId) { const { data } = await supabase.from('agents').select('*').eq('id', body.agentId).single(); if (data) agentCfg = data; }
+      const result = await runAI(body.userMessage, body.systemPrompt || agentCfg.system_prompt || '', body.modelEngine || agentCfg.model_engine || DEF_MODEL, body.temperature ?? agentCfg.temperature ?? 0.7, body.maxTokens ?? agentCfg.max_tokens ?? 2048, apiKey);
       const ms = Date.now() - t0;
-      try { await supabase.from('telemetry_logs').insert({ agent_id: agentId, user_id: userId, tokens_used: result.tokens, latency_ms: ms, status: 'success', message: `[OK] ${result.model} ${ms}ms` }); } catch(e) {}
+      try { await supabase.from('telemetry_logs').insert({ agent_id: body.agentId || null, user_id: userId, tokens_used: result.tokens, latency_ms: ms, status: 'success', message: 'OK ' + result.model + ' ' + ms + 'ms' }); } catch (e) {}
       return res.json({ response: result.text, tokensUsed: result.tokens, latencyMs: ms, status: 'success' });
     }
 
@@ -109,40 +110,51 @@ module.exports = async function handler(req, res) {
     }
 
     if (path === '/api/agents' && req.method === 'POST') {
-      const userId = (await uid(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
+      const userId = (await getUID(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
       const b = req.body || {};
       if (!b.name) return res.status(400).json({ error: 'name required' });
-      const { data, error } = await supabase.from('agents').insert({ user_id: userId, name: b.name, description: b.description || '', system_prompt: b.system_prompt || '', model_engine: b.model_engine || DEF_MODEL, temperature: b.temperature ?? 0.7, max_tokens: b.max_tokens ?? 2048, tools_config: b.tools_config || {} }).select().single();
+      const { data, error } = await supabase.from('agents').insert({ user_id: userId, name: b.name, description: b.description || '', system_prompt: b.system_prompt || '', model_engine: b.model_engine || DEF_MODEL, temperature: b.temperature || 0.7, max_tokens: b.max_tokens || 2048, tools_config: b.tools_config || {} }).select().single();
       if (error) return res.status(500).json({ error: error.message });
       return res.status(201).json({ agent: data });
     }
 
     if (path.startsWith('/api/analytics') && req.method === 'GET') {
-      const userId = (await uid(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
+      const userId = (await getUID(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
       const aid = path.split('/').pop();
       let q = supabase.from('telemetry_logs').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(200);
       if (aid && aid !== 'analytics' && aid !== 'all') q = q.eq('agent_id', aid);
       const { data: logs, error } = await q;
       if (error) return res.status(500).json({ error: error.message });
       const daily = {}, buckets = {};
-      (logs || []).forEach((l) => {
+      (logs || []).forEach(function(l) {
         if (l.created_at) {
           const d = new Date(l.created_at).toISOString().split('T')[0];
           daily[d] = (daily[d] || 0) + (l.tokens_used || 0);
-          if (l.latency_ms) { const h = new Date(l.created_at).getHours()+':00'; if (!buckets[h]) buckets[h] = []; buckets[h].push(l.latency_ms); }
+          if (l.latency_ms) { var h = new Date(l.created_at).getHours() + ':00'; if (!buckets[h]) buckets[h] = []; buckets[h].push(l.latency_ms); }
         }
       });
       return res.json({
-        tokenTrends: Object.entries(daily).map(([date,tokens]) => ({date,tokens})).sort((a,b) => a.date.localeCompare(b.date)).slice(-14),
-        latencyMatrix: Object.entries(buckets).map(([l,v]) => ({label:l,latency:Math.round(v.reduce((a,b)=>a+b)/v.length)})).sort((a,b) => parseInt(a.label)-parseInt(b.label)),
-        recentLogs: (logs||[]).slice(0,10).map(l => ({message: l.message || `[${l.status}] ${l.latency_ms}ms`, status: l.status, timestamp: l.created_at})),
-        totalExecutions: logs?.length || 0,
+        tokenTrends: Object.entries(daily).map(function(e) { return { date: e[0], tokens: e[1] }; }).sort(function(a, b) { return a.date.localeCompare(b.date); }).slice(-14),
+        latencyMatrix: Object.entries(buckets).map(function(e) { return { label: e[0], latency: Math.round(e[1].reduce(function(a, b) { return a + b; }) / e[1].length) }; }).sort(function(a, b) { return parseInt(a.label) - parseInt(b.label); }),
+        recentLogs: (logs || []).slice(0, 10).map(function(l) { return { message: l.message || '[' + l.status + '] ' + l.latency_ms + 'ms', status: l.status, timestamp: l.created_at }; }),
+        totalExecutions: logs ? logs.length : 0,
       });
     }
 
+    // Fork agent
+    if (path.match(/^\/api\/agents\/[^/]+\/fork$/) && req.method === 'POST') {
+      const userId = (await getUID(req)) || (ANON ? '00000000-0000-0000-0000-000000000000' : null);
+      const origId = path.split('/')[3];
+      const { data: orig } = await supabase.from('agents').select('*').eq('id', origId).single();
+      if (!orig) return res.status(404).json({ error: 'Not found' });
+      const { data, error } = await supabase.from('agents').insert({ user_id: userId, name: orig.name + ' (Fork)', description: orig.description, system_prompt: orig.system_prompt, model_engine: orig.model_engine, temperature: orig.temperature, max_tokens: orig.max_tokens, tools_config: orig.tools_config }).select().single();
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(201).json({ agent: data });
+    }
+
     return res.status(404).json({ error: 'Not found' });
-  } catch(e) {
+  } catch (e) {
     console.error('API Error:', e);
     return res.status(500).json({ error: e.message || 'Server error' });
   }
-};
+}
