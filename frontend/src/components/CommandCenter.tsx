@@ -190,9 +190,48 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                     onChange={(e) => setModelEngine(e.target.value)}
                     className="w-full bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-cyan-400/30 transition-colors"
                   >
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    {/* Google Gemini */}
+                    <optgroup label="Google Gemini">
+                      <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                      <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                      <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    </optgroup>
+                    {/* Anthropic Claude */}
+                    <optgroup label="Anthropic Claude">
+                      <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                      <option value="claude-haiku-4">Claude Haiku 4</option>
+                      <option value="claude-opus-4">Claude Opus 4</option>
+                    </optgroup>
+                    {/* OpenAI */}
+                    <optgroup label="OpenAI">
+                      <option value="gpt-4o">GPT-4o</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                      <option value="o1">o1</option>
+                      <option value="o3-mini">o3-mini</option>
+                    </optgroup>
+                    {/* DeepSeek */}
+                    <optgroup label="DeepSeek">
+                      <option value="deepseek-v3">DeepSeek V3</option>
+                      <option value="deepseek-r1">DeepSeek R1</option>
+                    </optgroup>
+                    {/* xAI Grok */}
+                    <optgroup label="xAI Grok">
+                      <option value="grok-3">Grok 3</option>
+                      <option value="grok-3-mini">Grok 3 Mini</option>
+                    </optgroup>
+                    {/* Mistral */}
+                    <optgroup label="Mistral">
+                      <option value="mistral-large">Mistral Large</option>
+                      <option value="mistral-small">Mistral Small</option>
+                    </optgroup>
+                    {/* Ollama Local */}
+                    <optgroup label="Ollama (Local)">
+                      <option value="llama-3-70b">Llama 3 70B</option>
+                      <option value="llama-3-8b">Llama 3 8B</option>
+                      <option value="qwen-2.5-72b">Qwen 2.5 72B</option>
+                      <option value="codellama-34b">Code Llama 34B</option>
+                    </optgroup>
                   </select>
                 </div>
 
@@ -246,12 +285,49 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
 
             {/* System Directive */}
             <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
-              <h3 className="text-sm font-medium text-slate-300 mb-3">System Directive</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-300">System Directive</h3>
+                <select
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val) setSystemPrompt(val);
+                  }}
+                  value=""
+                  className="text-xs font-mono bg-slate-900/50 border border-slate-800/30 rounded px-2 py-1 text-slate-400 focus:outline-none"
+                >
+                  <option value="">Load template...</option>
+                  <option value="You are an expert data analyst. Your role is to analyze datasets, identify patterns, generate statistical insights, and produce clear visualizations. Always validate your findings with quantitative evidence before presenting conclusions.">Data Analyst</option>
+                  <option value="You are a senior code reviewer. Analyze pull requests for code quality, security vulnerabilities, performance issues, and adherence to best practices. Provide constructive feedback with specific line references and suggested improvements.">Code Reviewer</option>
+                  <option value="You are a social media strategist. Create engaging, platform-optimized content that drives engagement and brand awareness. Analyze sentiment, track trends, and adapt tone to match target audience demographics.">Social Media Manager</option>
+                  <option value="You are a research assistant specializing in deep, multi-source synthesis. Gather information from diverse sources, cross-reference facts, identify knowledge gaps, and present findings with proper citations and confidence levels.">Research Assistant</option>
+                  <option value="You are a DevOps engineer focused on CI/CD pipeline monitoring and incident response. Monitor deployment health, detect anomalies, auto-rollback failed deploys, and maintain system reliability with minimal downtime.">DevOps Sentinel</option>
+                  <option value="You are a legal document analyst. Extract key clauses, identify risks and obligations, flag unusual terms, and summarize complex legal language into actionable insights. Always note when professional legal review is recommended.">Legal Parser</option>
+                  <option value="You are a cryptocurrency and DeFi analyst. Track on-chain data, whale movements, yield farming opportunities, and market sentiment. Provide risk assessments and highlight emerging trends in the Web3 ecosystem.">Crypto Scout</option>
+                  <option value="You are an email management assistant. Auto-categorize inbound emails by urgency and topic, draft contextually appropriate responses, and prioritize action items. Maintain professional tone and flag sensitive communications.">Email Triage</option>
+                  <option value="You are a SQL expert. Convert natural language queries into optimized SQL with proper indexing hints, JOIN strategies, and query plans. Support PostgreSQL, MySQL, and BigQuery dialects.">SQL Generator</option>
+                  <option value="You are a QA engineer specializing in API testing. Generate comprehensive test suites covering happy paths, edge cases, error handling, and security scenarios. Include load testing and contract validation.">API Tester</option>
+                  <option value="You are a customer success analyst. Predict churn risk by analyzing usage patterns, support tickets, and engagement metrics. Propose targeted retention strategies with measurable impact.">Churn Predictor</option>
+                  <option value="You are a technical writer. Generate clear, comprehensive documentation including README files, API references, changelogs, and onboarding guides. Adapt detail level to target audience expertise.">Doc Writer</option>
+                  <option value="You are a cybersecurity specialist. Scan codebases for OWASP vulnerabilities, insecure dependencies, and misconfigurations. Provide prioritized remediation steps with CVSS scoring.">Security Auditor</option>
+                  <option value="You are a meeting assistant. Transcribe discussions, extract action items with owners and deadlines, identify decisions made, and generate concise executive summaries.">Meeting Summarizer</option>
+                  <option value="You are a competitive intelligence analyst. Monitor competitor pricing, product changes, and market positioning. Alert on significant shifts and provide strategic recommendations.">Price Monitor</option>
+                  <option value="You are a talent acquisition specialist. Source candidates from GitHub, LinkedIn, and technical communities. Evaluate technical fit, cultural alignment, and growth potential.">Talent Sourcer</option>
+                  <option value="You are a site reliability engineer. Monitor application logs for anomalies, predict failures before they occur, and automate incident response. Maintain SLOs and error budgets.">SRE Analyst</option>
+                  <option value="You are a content strategist. Plan editorial calendars based on audience analytics, seasonal trends, and engagement data. Optimize posting schedules for maximum reach.">Content Planner</option>
+                  <option value="You are a dependency management specialist. Monitor for outdated packages, test compatibility of updates, and automate PR creation with changelog summaries and breaking change alerts.">Dep Updater</option>
+                  <option value="You are a support operations coordinator. Classify tickets by urgency and topic, route to appropriate teams, suggest knowledge base articles, and track resolution SLAs.">Support Router</option>
+                  <option value="You are a statistics expert specializing in A/B testing. Calculate statistical significance, confidence intervals, and minimum sample sizes. Guard against common pitfalls like peeking and multiple comparisons.">A/B Analyst</option>
+                  <option value="You are a community moderator. Monitor channels for policy violations, toxic content, and spam. Apply graduated responses from warnings to bans with clear documentation.">Community Mod</option>
+                  <option value="You are a release manager. Draft release notes from commit history and PRs, categorize changes by impact, and communicate breaking changes clearly to stakeholders.">Release Manager</option>
+                  <option value="You are a knowledge management specialist. Organize internal documentation, maintain taxonomies, identify stale content, and ensure information discoverability across teams.">KB Curator</option>
+                  <option value="You are a workflow automation orchestrator. Chain multiple AI agents together for complex multi-step processes. Handle error recovery, parallel execution, and result aggregation.">Workflow Orchestrator</option>
+                </select>
+              </div>
               <textarea
                 value={systemPrompt}
                 onChange={(e) => setSystemPrompt(e.target.value)}
                 placeholder="Define agent behavior, personality, and constraints..."
-                className="w-full h-32 bg-transparent border-0 text-sm font-mono text-slate-400 resize-none focus:outline-none placeholder:text-slate-600"
+                className="w-full h-40 bg-transparent border-0 text-sm font-mono text-slate-400 resize-none focus:outline-none placeholder:text-slate-600"
               />
             </div>
 
