@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/[[...route]].ts" },
+    { "source": "/(.*)", "destination": "/frontend/dist/index.html" }
+  ]
+}
