@@ -29,6 +29,12 @@ export interface AnalyticsData {
   totalExecutions: number;
 }
 
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  context_length: number;
+}
+
 // New types for advanced features
 export interface PromptTemplate {
   id: string;
@@ -121,7 +127,7 @@ export const api = {
   forkAgent: (id: string) =>
     fetchJSON<{ agent: Agent }>(`/api/agents/${id}/fork`, { method: 'POST' }),
 
-  // Run
+  // Run (OpenRouter)
   runAgent: (data: {
     agentId?: string;
     systemPrompt?: string;
@@ -134,6 +140,9 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
+
+  // Models
+  getModels: () => fetchJSON<{ models: OpenRouterModel[] }>('/api/run/models'),
 
   // Analytics
   getAnalytics: (agentId?: string) =>

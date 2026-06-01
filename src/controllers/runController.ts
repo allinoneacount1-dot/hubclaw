@@ -1,10 +1,11 @@
 import { Response } from 'express';
 import supabase from '../config/supabaseClient.js';
-import { runGemini } from '../services/geminiService.js';
+import { runOpenRouter } from '../services/openrouterService.js';
+import { config } from '../config/environment.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import type { RunRequest, RunResponse } from '../types/index.js';
 
-// POST /api/run - Execute agent with BYOK Gemini
+// POST /api/run - Execute agent with OpenRouter
 export async function runAgent(
   req: AuthRequest,
   res: Response
@@ -17,7 +18,7 @@ export async function runAgent(
       agentId,
       systemPrompt,
       userMessage,
-      modelEngine = 'gemini-1.5-flash',
+      modelEngine = config.defaultFreeModel,
       temperature = 0.7,
       maxTokens = 2048,
       toolsConfig = {},
@@ -28,18 +29,22 @@ export async function runAgent(
       return;
     }
 
-    // Fetch user's Gemini API key from profile
-    const { data: profile, error: profileError } = await supabase
+    // Get OpenRouter API key: user profile → env fallback
+    let openRouterApiKey = config.openRouterApiKey;
+
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('encrypted_gemini_api_key')
+      .select('openrouter_api_key, encrypted_gemini_api_key')
       .eq('id', userId)
       .single();
 
-    // If no profile or no key, use mock mode
-    const userApiKey = profile?.encrypted_gemini_api_key;
+    const userApiKey = profile?.openrouter_api_key || profile?.encrypted_gemini_api_key;
+    if (userApiKey) {
+      openRouterApiKey = userApiKey;
+    }
 
     // If agentId provided, fetch agent config
-    let agentConfig: any = {};
+    let agentConfig: Record<string, unknown> = {};
     if (agentId) {
       const { data: agent } = await supabase
         .from('agents')
@@ -51,14 +56,14 @@ export async function runAgent(
       }
     }
 
-    const finalSystemPrompt = systemPrompt || agentConfig.system_prompt || '';
-    const finalModel = modelEngine || agentConfig.model_engine || 'gemini-1.5-flash';
-    const finalTemp = temperature ?? agentConfig.temperature ?? 0.7;
-    const finalMaxTokens = maxTokens ?? agentConfig.max_tokens ?? 2048;
+    const finalSystemPrompt = systemPrompt || (agentConfig.system_prompt as string) || '';
+    const finalModel = modelEngine || (agentConfig.model_engine as string) || config.defaultFreeModel;
+    const finalTemp = temperature ?? (agentConfig.temperature as number) ?? 0.7;
+    const finalMaxTokens = maxTokens ?? (agentConfig.max_tokens as number) ?? 2048;
 
-    // Execute Gemini
-    const result = await runGemini({
-      apiKey: userApiKey || 'mock-key',
+    // Execute via OpenRouter
+    const result = await runOpenRouter({
+      apiKey: openRouterApiKey || '',
       prompt: userMessage,
       systemPrompt: finalSystemPrompt,
       model: finalModel,
@@ -68,23 +73,23 @@ export async function runAgent(
 
     const latencyMs = Date.now() - startTime;
 
-    // Log telemetry (async, don't block response)
-    supabase
-      .from('telemetry_logs')
-      .insert({
-        agent_id: agentId || null,
-        user_id: userId,
-        tokens_used: result.tokensUsed,
-        latency_ms: latencyMs,
-        status: 'success',
-        executed_tool: Object.entries(toolsConfig)
-          .filter(([, v]) => v)
-          .map(([k]) => k)
-          .join(', ') || null,
-        message: `[SUCCESS] Agent executed in ${latencyMs}ms`,
-      })
-      .then()
-      .catch(() => {});
+    // Log telemetry (fire and forget)
+    try {
+      await supabase
+        .from('telemetry_logs')
+        .insert({
+          agent_id: agentId || null,
+          user_id: userId,
+          tokens_used: result.tokensUsed,
+          latency_ms: latencyMs,
+          status: 'success',
+          executed_tool: Object.entries(toolsConfig)
+            .filter(([, v]) => v)
+            .map(([k]) => k)
+            .join(', ') || null,
+          message: `[SUCCESS] ${result.model} — ${latencyMs}ms`,
+        });
+    } catch { /* telemetry failed, ignore */ }
 
     const response: RunResponse = {
       response: result.text,
@@ -97,24 +102,38 @@ export async function runAgent(
   } catch (err: any) {
     const latencyMs = Date.now() - startTime;
 
-    // Log error telemetry
-    supabase
-      .from('telemetry_logs')
-      .insert({
-        agent_id: req.body.agentId || null,
-        user_id: req.userId,
-        tokens_used: 0,
-        latency_ms: latencyMs,
-        status: 'error',
-        message: `[ERROR] ${err.message}`,
-      })
-      .then()
-      .catch(() => {});
+    // Log error telemetry (fire and forget)
+    try {
+      await supabase
+        .from('telemetry_logs')
+        .insert({
+          agent_id: req.body.agentId || null,
+          user_id: req.userId,
+          tokens_used: 0,
+          latency_ms: latencyMs,
+          status: 'error',
+          message: `[ERROR] ${err.message}`,
+        });
+    } catch { /* telemetry failed, ignore */ }
 
     res.status(500).json({
       error: err.message || 'Internal server error',
       status: 'error',
       latencyMs,
     });
+  }
+}
+
+// GET /api/models — list available OpenRouter free models
+export async function getModels(
+  _req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { getFreeModels } = await import('../services/openrouterService.js');
+    const models = await getFreeModels(config.openRouterApiKey);
+    res.json({ models });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 }
