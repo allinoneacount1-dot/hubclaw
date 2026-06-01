@@ -29,6 +29,74 @@ export interface AnalyticsData {
   totalExecutions: number;
 }
 
+// New types for advanced features
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  category: string;
+  content: string;
+  tags: string[];
+  isBuiltIn: boolean;
+  created_at?: string;
+}
+
+export interface TaskQueueItem {
+  id: string;
+  agentId: string;
+  prompt: string;
+  priority: 'urgent' | 'normal' | 'low';
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  result?: string;
+  error?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface ConversationBranch {
+  id: string;
+  parentMessageId?: string;
+  messages: ChatMessage[];
+  label: string;
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'agent' | 'system';
+  content: string;
+  timestamp: string;
+  tokensUsed?: number;
+  latencyMs?: number;
+  model?: string;
+}
+
+export interface OrchestrationPipeline {
+  id: string;
+  name: string;
+  steps: PipelineStep[];
+  status: 'idle' | 'running' | 'completed' | 'failed';
+  createdAt: string;
+}
+
+export interface PipelineStep {
+  id: string;
+  agentId: string;
+  agentName: string;
+  input: string;
+  output?: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  dependsOn?: string[];
+}
+
+export interface TokenBudget {
+  dailyLimit: number;
+  used: number;
+  agentId?: string;
+}
+
+export type ThemeMode = 'dark' | 'light' | 'auto';
+export type ExportFormat = 'markdown' | 'json' | 'csv' | 'txt';
+
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`, {
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -70,4 +138,36 @@ export const api = {
   // Analytics
   getAnalytics: (agentId?: string) =>
     fetchJSON<AnalyticsData>(`/api/analytics/${agentId || ''}`),
+
+  // Prompts
+  getPrompts: () => fetchJSON<{ prompts: PromptTemplate[] }>('/api/prompts'),
+  createPrompt: (data: Partial<PromptTemplate>) =>
+    fetchJSON<{ prompt: PromptTemplate }>('/api/prompts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deletePrompt: (id: string) =>
+    fetchJSON(`/api/prompts/${id}`, { method: 'DELETE' }),
+
+  // Task Queue
+  getTasks: (agentId?: string) =>
+    fetchJSON<{ tasks: TaskQueueItem[] }>(`/api/tasks/${agentId || ''}`),
+  createTask: (data: {
+    agentId: string;
+    prompt: string;
+    priority?: 'urgent' | 'normal' | 'low';
+    systemPrompt?: string;
+    modelEngine?: string;
+  }) => fetchJSON<{ task: TaskQueueItem }>('/api/tasks', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // Token Budget
+  getTokenBudget: () => fetchJSON<TokenBudget>('/api/budget'),
+  setTokenBudget: (data: TokenBudget) =>
+    fetchJSON<TokenBudget>('/api/budget', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };

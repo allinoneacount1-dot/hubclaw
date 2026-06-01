@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import type { Agent } from '../services/api';
 import AgentCard from './AgentCard';
-import { Search, Plus, Activity, Zap } from 'lucide-react';
+import { Search, Plus, Activity, Zap, Star, GitFork } from 'lucide-react';
 
 interface DashboardProps {
   onAgentClick: (agent: Agent) => void;
   onAnalyticsClick: () => void;
+  onPromptsClick: () => void;
+  onOrchestrationClick: () => void;
 }
 
 const MOCK_AGENTS: Agent[] = [
@@ -41,13 +43,9 @@ const MOCK_AGENTS: Agent[] = [
   { id: '28', user_id: 'demo', name: 'Form Filler', description: 'Auto-fills web forms from structured data with validation.', model_engine: 'gemini-1.5-flash', temperature: 0.2, max_tokens: 2048, tools_config: { 'Python Sandbox': true }, stars: 7, system_prompt: 'You are a form automation assistant.', created_at: '2026-06-01T00:00:00Z' },
   { id: '29', user_id: 'demo', name: 'Knowledge Base Curator', description: 'Organizes, tags, and keeps internal documentation up to date.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 8192, tools_config: { 'Web Search': true, 'GitHub Repo Manager': true }, stars: 19, system_prompt: 'You are a knowledge manager.', created_at: '2026-06-01T00:00:00Z' },
   { id: '30', user_id: 'demo', name: 'Workflow Orchestrator', description: 'Chains multiple agents together for complex multi-step automation.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 8192, tools_config: { 'Web Search': true, 'Python Sandbox': true, 'GitHub Repo Manager': true, 'Discord Webhook': true }, stars: 88, system_prompt: 'You are a workflow orchestrator.', created_at: '2026-06-01T00:00:00Z' },
-  { id: '31', user_id: 'demo', name: 'Data Analyst Agent', description: 'Analyzes datasets and generates insights with Python sandbox and web search.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 4096, tools_config: { 'Web Search': true, 'Python Sandbox': true }, stars: 12, system_prompt: 'You are a data analyst.', created_at: '2026-06-01T00:00:00Z' },
-  { id: '32', user_id: 'demo', name: 'Code Review Bot', description: 'Reviews GitHub PRs with static analysis and security scanning.', model_engine: 'gemini-1.5-flash', temperature: 0.1, max_tokens: 8192, tools_config: { 'GitHub Repo Manager': true }, stars: 28, system_prompt: 'You are a code reviewer.', created_at: '2026-06-01T00:00:00Z' },
-  { id: '33', user_id: 'demo', name: 'Social Media Manager', description: 'Auto-posts to Twitter, Discord with sentiment analysis.', model_engine: 'gemini-2.0-flash', temperature: 0.8, max_tokens: 2048, tools_config: { 'Discord Webhook': true, 'Web Search': true }, stars: 5, system_prompt: 'You are a social media manager.', created_at: '2026-06-01T00:00:00Z' },
-  { id: '34', user_id: 'demo', name: 'Research Assistant', description: 'Deep research with multi-source synthesis and citation tracking.', model_engine: 'gemini-1.5-pro', temperature: 0.4, max_tokens: 8192, tools_config: { 'Web Search': true, 'Python Sandbox': true }, stars: 45, system_prompt: 'You are a research assistant.', created_at: '2026-06-01T00:00:00Z' },
 ];
 
-export default function Dashboard({ onAgentClick, onAnalyticsClick }: DashboardProps) {
+export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsClick, onOrchestrationClick }: DashboardProps) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -133,6 +131,18 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick }: DashboardP
           >
             Global Analytics
           </button>
+          <button
+            onClick={onPromptsClick}
+            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Prompt Library
+          </button>
+          <button
+            onClick={onOrchestrationClick}
+            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Orchestration
+          </button>
         </div>
       </div>
 
@@ -158,6 +168,14 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick }: DashboardP
           <span className="flex items-center gap-1.5">
             <Zap size={12} className="text-cyan-400" />
             4.2k Telemetry
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Star size={12} className="text-amber-400/50" />
+            {agents.reduce((sum, a) => sum + (a.stars || 0), 0)} Stars
+          </span>
+          <span className="flex items-center gap-1.5">
+            <GitFork size={12} className="text-slate-500" />
+            {agents.length} Models
           </span>
         </motion.div>
       </div>
