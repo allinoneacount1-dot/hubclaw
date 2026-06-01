@@ -3,7 +3,14 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs22.x",
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
