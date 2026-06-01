@@ -85,7 +85,7 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick }: DashboardP
       <header className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.jpg" alt="HubClaw" className="h-8 w-8 rounded-lg object-cover" />
+            <img src="/logo.png" alt="HubClaw" className="h-8 w-8 rounded-lg object-contain bg-transparent" />
             <motion.h1 className="text-lg font-light tracking-widest text-slate-300 animate-breathe">
               HubClaw
             </motion.h1>
@@ -101,10 +101,6 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick }: DashboardP
                 placeholder="Search agents..."
                 className="w-64 pl-9 pr-4 py-2 bg-slate-900/30 border border-slate-800/30 rounded-full text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/30 focus:w-72 transition-all duration-300"
               />
-            </div>
-
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400/20 to-slate-800/50 border border-slate-800/30 flex items-center justify-center text-xs font-mono text-cyan-400">
-              Op
             </div>
 
             <button
