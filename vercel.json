@@ -3,7 +3,11 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/api/health", "destination": "/api/index.js" },
+    { "source": "/api/run", "destination": "/api/index.js" },
+    { "source": "/api/models", "destination": "/api/index.js" },
+    { "source": "/api/agents", "destination": "/api/index.js" },
+    { "source": "/api/analytics/(.*)", "destination": "/api/index.js" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
