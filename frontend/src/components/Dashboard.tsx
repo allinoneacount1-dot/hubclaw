@@ -129,9 +129,14 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
               title="Go to pump.fun"
               aria-label="Go to pump.fun"
             >
-              {/* pump.fun SVG icon */}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+              {/* pump.fun logo (HubClaw themed) */}
+              <svg width="16" height="16" viewBox="0 0 600 600" fill="none">
+                <path d="M300 44.1C159 44.1 44.1 159 44.1 300C44.1 441 159 555.9 300 555.9C441 555.9 555.9 441 555.9 300C555.9 159 441 44.1 300 44.1Z" fill="#132E27"/>
+                <path d="M177.3 177.3L300 300L422.7 177.3L300 422.7L177.3 177.3Z" fill="#8B5CF6"/>
+                <path d="M177.3 422.7L300 300L422.7 422.7L300 422.7L177.3 422.7Z" fill="#5B42A3"/>
+                <path d="M180 260C190 240 210 240 220 260C230 280 220 310 200 310C180 310 170 280 180 260Z" fill="white"/>
+                <path d="M210 360C230 340 250 360 240 380C230 400 200 390 210 360Z" fill="white"/>
+                <path d="M180 330C185 320 195 320 200 330C205 340 200 355 190 355C180 355 175 340 180 330Z" fill="white"/>
               </svg>
             </a>
             <WalletButton />
