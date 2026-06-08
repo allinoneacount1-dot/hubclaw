@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { motion } from 'framer-motion';
 
 export function WalletButton() {
