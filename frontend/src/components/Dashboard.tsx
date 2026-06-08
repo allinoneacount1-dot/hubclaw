@@ -129,14 +129,14 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
               title="Go to pump.fun"
               aria-label="Go to pump.fun"
             >
-              {/* Exact pump.fun pill logo */}
+              {/* Exact pump.fun capsule pill logo */}
               <svg width="16" height="16" viewBox="0 0 512 512" fill="none">
-                <path d="M256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48Z" fill="#132E27"/>
-                <path d="M180 180L256 256L332 180L256 332L180 180Z" fill="#56C58A"/>
-                <path d="M180 332L256 256L332 332L256 332L180 332Z" fill="#44A077"/>
-                <path d="M185 240C195 230 210 230 220 240C230 250 220 265 207 265C195 265 185 250 185 240Z" fill="white"/>
-                <path d="M205 300C217 292 227 300 222 312C217 325 197 320 205 300Z" fill="white"/>
-                <path d="M187 285C191 281 199 281 203 285C207 289 202 297 193 297C184 297 183 289 187 285Z" fill="white"/>
+                <path d="M160 256C160 198.5 206.5 152 264 152C321.5 152 368 198.5 368 256C368 313.5 321.5 360 264 360C206.5 360 160 313.5 160 256Z" fill="#132E27"/>
+                <path d="M192 192L264 264L336 192L264 336L192 192Z" fill="#56C58A"/>
+                <path d="M192 336L264 264L336 336L264 336L192 336Z" fill="#44A077"/>
+                <path d="M196 220C206 210 224 210 234 220C244 230 234 248 219 248C206 248 196 230 196 220Z" fill="white"/>
+                <path d="M216 280C228 272 238 280 233 292C228 304 208 300 216 280Z" fill="white"/>
+                <path d="M198 264C202 260 210 260 214 264C218 268 212 276 204 276C195 276 194 268 198 264Z" fill="white"/>
               </svg>
             </a>
             <WalletButton />
