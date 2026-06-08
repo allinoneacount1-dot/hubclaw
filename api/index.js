@@ -48,7 +48,7 @@ async function callOR(key, msgs, model, temp, max) {
 async function runAI(prompt, sys, model, temp, max, key) {
   if (MOCK || !key) {
     await new Promise(r => setTimeout(r, 400));
-    return { text: '🤖 [Mock] Processed: "' + prompt.slice(0, 60) + '...' | Model: ' + model + ' | Set OPENROUTER_API_KEY for real AI', tokens: 50, model: model };
+    return { text: '🤖 [Mock] Processed: "' + prompt.slice(0, 60) + '... | Model: ' + model + ' | Set OPENROUTER_API_KEY for real AI', tokens: 50, model: model };
   }
   const msgs = [];
   if (sys) msgs.push({ role: 'system', content: sys });
