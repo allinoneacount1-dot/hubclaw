@@ -7,7 +7,9 @@
     { "src": "/favicon.svg", "dest": "/favicon.svg" },
     { "src": "/logo.png", "dest": "/logo.png" },
     { "src": "/logo.jpg", "dest": "/logo.jpg" },
+    { "src": "/logo-hubclaw.svg", "dest": "/logo-hubclaw.svg" },
     { "src": "/icons.svg", "dest": "/icons.svg" },
+    { "src": "/(.*\\.(png|jpg|jpeg|svg|ico|gif|webp))", "dest": "/$1" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
