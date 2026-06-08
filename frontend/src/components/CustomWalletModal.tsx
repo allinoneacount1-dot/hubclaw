@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, type WalletName } from '@solana/wallet-adapter-react';
 import { X, Wallet } from 'lucide-react';
 
 interface CustomWalletModalProps {
@@ -12,7 +11,7 @@ export function CustomWalletModal({ isOpen, onClose }: CustomWalletModalProps) {
   const { wallets, select } = useWallet();
 
   const handleSelect = (walletName: string) => {
-    select(walletName);
+    select(walletName as WalletName);
     onClose();
   };
 
