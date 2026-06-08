@@ -7,7 +7,7 @@
   --color-slate-700: #334155;
   --color-slate-600: #475569;
   --color-slate-500: #64748b;
-  --color-slate-400: #94a3b8;
+  --color-slate-400: #94a38b;
   --color-slate-300: #cbd5e1;
   --color-slate-200: #e2e8f0;
   --color-slate-100: #f1f5f9;
@@ -116,7 +116,7 @@ body {
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  z-index: 99999 !important;
+  z-index: 9999999 !important; /* Super high z-index */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -124,6 +124,6 @@ body {
 }
 
 .modal-content {
-  z-index: 100000 !important;
+  z-index: 99999999 !important; /* Even higher for content */
   position: relative !important;
 }
