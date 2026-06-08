@@ -129,14 +129,14 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
               title="Go to pump.fun"
               aria-label="Go to pump.fun"
             >
-              {/* pump.fun logo (HubClaw themed) */}
+              {/* pump.fun pill logo (exact match) */}
               <svg width="16" height="16" viewBox="0 0 600 600" fill="none">
-                <path d="M300 44.1C159 44.1 44.1 159 44.1 300C44.1 441 159 555.9 300 555.9C441 555.9 555.9 441 555.9 300C555.9 159 441 44.1 300 44.1Z" fill="#132E27"/>
-                <path d="M177.3 177.3L300 300L422.7 177.3L300 422.7L177.3 177.3Z" fill="#8B5CF6"/>
-                <path d="M177.3 422.7L300 300L422.7 422.7L300 422.7L177.3 422.7Z" fill="#5B42A3"/>
-                <path d="M180 260C190 240 210 240 220 260C230 280 220 310 200 310C180 310 170 280 180 260Z" fill="white"/>
-                <path d="M210 360C230 340 250 360 240 380C230 400 200 390 210 360Z" fill="white"/>
-                <path d="M180 330C185 320 195 320 200 330C205 340 200 355 190 355C180 355 175 340 180 330Z" fill="white"/>
+                <circle cx="300" cy="300" r="270" fill="#132E27"/>
+                <path d="M165 165L300 300L435 165L300 435L165 165Z" fill="#56C58A"/>
+                <path d="M165 435L300 300L435 435L300 435L165 435Z" fill="#44A077"/>
+                <path d="M170 255C180 240 200 240 210 255C220 270 210 290 195 290C180 290 170 270 170 255Z" fill="white"/>
+                <path d="M200 340C215 330 230 340 225 355C220 370 195 365 200 340Z" fill="white"/>
+                <path d="M175 320C180 315 190 315 195 320C200 325 195 335 185 335C175 335 170 325 175 320Z" fill="white"/>
               </svg>
             </a>
             <WalletButton />
