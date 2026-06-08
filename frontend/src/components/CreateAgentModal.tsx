@@ -80,10 +80,10 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {initialData ? 'Edit Agent' : 'Buat Agent Baru'}
+                      {initialData ? 'Edit Agent' : 'Create New Agent'}
                     </h2>
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                      Konfigurasi AI agent sesuai kebutuhanmu
+                      Configure your AI agent to your needs
                     </p>
                   </div>
                 </div>
@@ -102,7 +102,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                      Nama Agent
+                      Agent Name
                     </label>
                     <input
                       type="text"
@@ -122,12 +122,12 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
 
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                      Deskripsi
+                      Description
                     </label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value})}
-                      placeholder="Deskripsi singkat tentang agent ini..."
+                      placeholder="Brief description about this agent..."
                       rows={2}
                       className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all resize-none"
                       style={{
@@ -148,7 +148,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                   <textarea
                     value={formData.system_prompt}
                     onChange={(e) => setFormData({ ...formData, system_prompt: e.target.value})}
-                    placeholder="Peran dan instruksi utama untuk agent ini..."
+                    placeholder="Role and main instructions for this agent..."
                     rows={6}
                     className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all font-mono text-sm"
                     style={{
@@ -223,7 +223,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                 {/* Tools */}
                 <div>
                   <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-                    Tools yang Tersedia
+                    Available Tools
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {DEFAULT_TOOLS.map((tool) => (
@@ -263,7 +263,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                       color: 'var(--text-secondary)'
                     }}
                   >
-                    Batal
+                    Cancel
                   </button>
                   <button
                     type="submit"
@@ -274,7 +274,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
                     }}
                   >
                     <Plus size={16} />
-                    {initialData ? 'Simpan Perubahan' : 'Buat Agent'}
+                    {initialData ? 'Save Changes' : 'Create Agent'}
                   </button>
                 </div>
               </form>
