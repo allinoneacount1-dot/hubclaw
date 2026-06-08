@@ -8,6 +8,7 @@ import promptsRoutes from './routes/promptsRoutes.js';
 import orchestrationRoutes from './routes/orchestrationRoutes.js';
 import tasksRoutes from './routes/tasksRoutes.js';
 import budgetRoutes from './routes/budgetRoutes.js';
+import sseRoutes from './routes/sseRoutes.js';
 import config from './config/environment.js';
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api/prompts', promptsRoutes);
 app.use('/api/orchestration', orchestrationRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use('/api/sse', sseRoutes);
 
 // 404 handler
 app.use((_req, res) => {

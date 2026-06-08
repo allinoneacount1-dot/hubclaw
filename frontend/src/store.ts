@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Agent, OrchestrationPipeline } from './services/api';
+import type { Agent, OrchestrationPipeline, TaskQueueItem } from './services/api';
 import { supabase } from './config/supabase';
+import { startSSE } from './services/api';
 import type { User } from '@supabase/supabase-js';
 
 interface PipelineStep {
@@ -39,6 +40,11 @@ interface AppState {
   addStep: (pipelineId: string, agentId: string, agentName: string, input: string) => void;
   removeStep: (pipelineId: string, stepId: string) => void;
 
+  // Task Queue
+  tasks: TaskQueueItem[];
+  setTasks: (tasks: TaskQueueItem[]) => void;
+  updateTask: (task: TaskQueueItem) => void;
+
   // Toast Notifications
   toasts: { id: string; type: 'success' | 'error' | 'info' | 'warning'; message: string }[];
   addToast: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
@@ -47,126 +53,173 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set, get) => ({
-      // Auth
-      user: null,
-      session: null,
-      setUser: (user) => set({ user }),
-      setSession: (session) => set({ session }),
-      signOut: async () => {
-        await supabase.auth.signOut();
-        set({ user: null, session: null });
-      },
+    (set, get) => {
+      let sseCleanup: (() => void) | null = null;
 
-      // Theme
-      theme: 'dark',
-      setTheme: (theme) => set({ theme }),
+      return {
+        // Auth
+        user: null,
+        session: null,
+        setUser: (user) => {
+          set({ user });
+        },
+        setSession: (session) => {
+          set({ session });
+          
+          if (session?.access_token && !sseCleanup) {
+            // Start SSE connection when we have a session
+            sseCleanup = startSSE(session.access_token, (event, data) => {
+              if (event === 'task_update') {
+                get().updateTask(data as TaskQueueItem);
+              }
+            });
+          } else if (!session && sseCleanup) {
+            // Cleanup SSE when we don't have a session
+            sseCleanup();
+            sseCleanup = null;
+          }
+        },
+        signOut: async () => {
+          await supabase.auth.signOut();
+          if (sseCleanup) {
+            sseCleanup();
+            sseCleanup = null;
+          }
+          set({ user: null, session: null });
+        },
 
-      // Agents
-      agents: [],
-      setAgents: (agents) => set({ agents }),
-      addAgent: (agent) => set((state) => ({ agents: [...state.agents, agent] })),
-      forkAgent: (agentId) => {
-        const agent = get().agents.find((a) => a.id === agentId);
-        if (!agent) return;
-        const newAgent: Agent = {
-          ...agent,
-          id: `agent-${Date.now()}`,
-          name: `${agent.name} (Fork)`,
-          created_at: new Date().toISOString(),
-        };
-        set((state) => ({ agents: [...state.agents, newAgent] }));
-        get().addToast('success', `Agent "${agent.name}" forked successfully!`);
-      },
+        // Theme
+        theme: 'dark',
+        setTheme: (theme) => set({ theme }),
 
-      // Pipelines
-      pipelines: [],
-      setPipelines: (pipelines) => set({ pipelines }),
-      createPipeline: (name) => {
-        const newPipeline: OrchestrationPipeline = {
-          id: `pipe-${Date.now()}`,
-          name,
-          steps: [],
-          status: 'idle',
-          createdAt: new Date().toISOString(),
-        };
-        set((state) => ({ pipelines: [...state.pipelines, newPipeline] }));
-        get().addToast('success', `Pipeline "${name}" created!`);
-      },
-      deletePipeline: (id) => {
-        const name = get().pipelines.find((p) => p.id === id)?.name;
-        set((state) => ({ pipelines: state.pipelines.filter((p) => p.id !== id) }));
-        if (name) get().addToast('info', `Pipeline "${name}" deleted`);
-      },
-      runPipeline: (id) => {
-        set((state) => ({
-          pipelines: state.pipelines.map((p) =>
-            p.id === id ? { ...p, status: 'running' } : p
-          ),
-        }));
-        setTimeout(() => {
+        // Agents
+        agents: [],
+        setAgents: (agents) => set({ agents }),
+        addAgent: (agent) => set((state) => ({ agents: [...state.agents, agent] })),
+        forkAgent: (agentId) => {
+          const agent = get().agents.find((a) => a.id === agentId);
+          if (!agent) return;
+          const newAgent: Agent = {
+            ...agent,
+            id: `agent-${Date.now()}`,
+            name: `${agent.name} (Fork)`,
+            created_at: new Date().toISOString(),
+          };
+          set((state) => ({ agents: [...state.agents, newAgent] }));
+          get().addToast('success', `Agent "${agent.name}" forked successfully!`);
+        },
+
+        // Pipelines
+        pipelines: [],
+        setPipelines: (pipelines) => set({ pipelines }),
+        createPipeline: (name) => {
+          const newPipeline: OrchestrationPipeline = {
+            id: `pipe-${Date.now()}`,
+            name,
+            steps: [],
+            status: 'idle',
+            createdAt: new Date().toISOString(),
+          };
+          set((state) => ({ pipelines: [...state.pipelines, newPipeline] }));
+          get().addToast('success', `Pipeline "${name}" created!`);
+        },
+        deletePipeline: (id) => {
+          const name = get().pipelines.find((p) => p.id === id)?.name;
+          set((state) => ({ pipelines: state.pipelines.filter((p) => p.id !== id) }));
+          if (name) get().addToast('info', `Pipeline "${name}" deleted`);
+        },
+        runPipeline: (id) => {
           set((state) => ({
             pipelines: state.pipelines.map((p) =>
-              p.id === id
+              p.id === id ? { ...p, status: 'running' } : p
+            ),
+          }));
+          setTimeout(() => {
+            set((state) => ({
+              pipelines: state.pipelines.map((p) =>
+                p.id === id
+                  ? {
+                      ...p,
+                      status: 'completed',
+                      steps: p.steps.map((s: PipelineStep) => ({ ...s, status: 'completed' })),
+                    }
+                  : p
+              ),
+            }));
+            get().addToast('success', 'Pipeline completed!');
+          }, 3000);
+        },
+        addStep: (pipelineId, agentId, agentName, input) => {
+          set((state) => ({
+            pipelines: state.pipelines.map((p) =>
+              p.id === pipelineId
                 ? {
                     ...p,
-                    status: 'completed',
-                    steps: p.steps.map((s: PipelineStep) => ({ ...s, status: 'completed' })),
+                    steps: [
+                      ...p.steps,
+                      {
+                        id: `step-${Date.now()}`,
+                        agentId,
+                        agentName,
+                        input,
+                        status: 'pending' as const,
+                      },
+                    ],
                   }
+              : p
+            ),
+          }));
+        },
+        removeStep: (pipelineId, stepId) => {
+          set((state) => ({
+            pipelines: state.pipelines.map((p) =>
+              p.id === pipelineId
+                ? { ...p, steps: p.steps.filter((s: PipelineStep) => s.id !== stepId) }
                 : p
             ),
           }));
-          get().addToast('success', 'Pipeline completed!');
-        }, 3000);
-      },
-      addStep: (pipelineId, agentId, agentName, input) => {
-        set((state) => ({
-          pipelines: state.pipelines.map((p) =>
-            p.id === pipelineId
-              ? {
-                  ...p,
-                  steps: [
-                    ...p.steps,
-                    {
-                      id: `step-${Date.now()}`,
-                      agentId,
-                      agentName,
-                      input,
-                      status: 'pending' as const,
-                    },
-                  ],
-                }
-              : p
-          ),
-        }));
-      },
-      removeStep: (pipelineId, stepId) => {
-        set((state) => ({
-          pipelines: state.pipelines.map((p) =>
-            p.id === pipelineId
-              ? { ...p, steps: p.steps.filter((s: PipelineStep) => s.id !== stepId) }
-              : p
-          ),
-        }));
-      },
+        },
 
-      // Toasts
-      toasts: [],
-      addToast: (type, message) => {
-        const id = `toast-${Date.now()}`;
-        set((state) => ({
-          toasts: [...state.toasts, { id, type, message }],
-        }));
-        setTimeout(() => {
-          get().removeToast(id);
-        }, 4000);
-      },
-      removeToast: (id) => {
-        set((state) => ({
-          toasts: state.toasts.filter((t) => t.id !== id),
-        }));
-      },
-    }),
+        // Task Queue
+        tasks: [],
+        setTasks: (tasks) => set({ tasks }),
+        updateTask: (task) => {
+          set((state) => {
+            const exists = state.tasks.find((t) => t.id === task.id);
+            if (exists) {
+              // Update existing task
+              return {
+                tasks: state.tasks.map((t) =>
+                  t.id === task.id ? task : t
+                ),
+              };
+            } else {
+              // Add new task
+              return {
+                tasks: [task, ...state.tasks],
+              };
+            }
+          });
+        },
+
+        // Toasts
+        toasts: [],
+        addToast: (type, message) => {
+          const id = `toast-${Date.now()}`;
+          set((state) => ({
+            toasts: [...state.toasts, { id, type, message }],
+          }));
+          setTimeout(() => {
+            get().removeToast(id);
+          }, 4000);
+        },
+        removeToast: (id) => {
+          set((state) => ({
+            toasts: state.toasts.filter((t) => t.id !== id),
+          }));
+        },
+      };
+    },
     {
       name: 'hubclaw-storage',
       storage: createJSONStorage(() => localStorage),

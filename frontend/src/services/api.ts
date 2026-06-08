@@ -1,5 +1,51 @@
 import { supabase } from '../config/supabase';
 
+export const startSSE = (
+  token: string,
+  onMessage: (event: string, data: any) => void,
+  onError?: (error: Event) => void
+) => {
+  const eventSource = new EventSource(`${API_BASE}/api/sse/events?token=${encodeURIComponent(token)}`);
+
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      onMessage('message', data);
+    } catch (err) {
+      console.error('Failed to parse SSE message:', err);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE error:', error);
+    onError?.(error);
+    eventSource.close();
+  };
+
+  // Listen for specific events
+  eventSource.addEventListener('connected', (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      onMessage('connected', data);
+    } catch (err) {
+      console.error('Failed to parse SSE message:', err);
+    }
+  });
+
+  eventSource.addEventListener('task_update', (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      onMessage('task_update', data);
+    } catch (err) {
+      console.error('Failed to parse SSE message:', err);
+    }
+  });
+
+  return () => {
+    eventSource.close();
+  };
+};
+
 export const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
 
 export interface Agent {
