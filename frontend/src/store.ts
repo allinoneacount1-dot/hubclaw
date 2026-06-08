@@ -6,14 +6,6 @@ import { startSSE, api } from './services/api';
 import type { User } from '@supabase/supabase-js';
 import { PublicKey } from '@solana/web3.js';
 
-interface PipelineStep {
-  id: string;
-  agentId: string;
-  agentName: string;
-  input: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-}
-
 interface AppState {
   // Auth
   user: User | null;
@@ -29,7 +21,7 @@ interface AppState {
     signature: string | null;
   };
   setSolanaWallet: (wallet: { publicKey: string | null; verified: boolean; signature: string | null }) => void;
-  verifySolanaWallet: (publicKey: PublicKey, signature: Uint8Array, message: string) => Promise<void>;
+  verifySolanaWallet: (publicKey: PublicKey, signature: Uint8Array) => Promise<void>;
 
   // Theme
   theme: 'dark' | 'light' | 'auto';
@@ -105,7 +97,7 @@ export const useAppStore = create<AppState>()(
           signature: null,
         },
         setSolanaWallet: (wallet) => set({ solanaWallet: wallet }),
-        verifySolanaWallet: async (publicKey, signature, message) => {
+        verifySolanaWallet: async (publicKey, signature) => {
           try {
             const user = get().user;
             if (!user) {

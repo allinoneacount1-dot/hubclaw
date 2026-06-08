@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Zap, BarChart3, GitBranch } from 'lucide-react';
+import { ArrowRight, Code, Zap, BarChart3, GitBranch, X } from 'lucide-react';
 import { pageTransition, containerVariants, itemVariants } from '../utils/transitions';
 
 export default function LandingPage({ onEnter }: { onEnter: () => void }) {
@@ -157,6 +157,19 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
             >
               <Code size={20} />
               View on GitHub
+            </a>
+            <a
+              href="https://x.com/HubclawHq"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-4 rounded-xl text-lg font-medium flex items-center gap-2 border transition-all hover:border-[var(--accent)]/50"
+              style={{
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <X size={20} />
+              Follow on X
             </a>
           </motion.div>
 

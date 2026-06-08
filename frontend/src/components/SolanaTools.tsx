@@ -4,8 +4,7 @@ import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana
 import { motion } from 'framer-motion';
 import { Wallet, Coins, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAppStore } from '../store';
-import { ed25519 } from '@noble/curves/ed25519';
-import { utf8 } from '@noble/curves/abstract/utils';
+import * as ed from '@noble/ed25519';
 
 export function SolanaTools() {
   const { publicKey, signMessage, signTransaction, connected } = useWallet();
@@ -43,12 +42,12 @@ export function SolanaTools() {
       const signature = await signMessage(encodedMessage);
       
       // Verify signature client-side first
-      const isValid = ed25519.verify(signature, encodedMessage, publicKey.toBytes());
+      const isValid = await ed.verify(signature, encodedMessage, publicKey.toBytes());
       if (!isValid) {
         throw new Error('Invalid signature');
       }
       
-      await verifySolanaWallet(publicKey, signature, message);
+      await verifySolanaWallet(publicKey, signature);
     } catch (err) {
       console.error('Failed to verify:', err);
       addToast('error', 'Failed to verify wallet');
