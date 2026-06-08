@@ -243,7 +243,7 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
         >
           <span className="flex items-center gap-1.5">
             <Activity size={12} style={{ color: 'var(--accent)' }} />
-            {agents.length} Active
+            30 Active
           </span>
           <span className="flex items-center gap-1.5">
             <Zap size={12} style={{ color: 'var(--accent)' }} />
@@ -251,11 +251,11 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
           </span>
           <span className="flex items-center gap-1.5">
             <Star size={12} style={{ color: 'color-mix(in srgb, orange 50%, var(--text-muted))' }} />
-            {agents.reduce((sum, a) => sum + (a.stars || 0), 0)} Stars
+            123 Stars
           </span>
           <span className="flex items-center gap-1.5">
             <GitFork size={12} style={{ color: 'var(--text-muted)' }} />
-            {agents.length} Models
+            5 Models
           </span>
         </motion.div>
       </div>
