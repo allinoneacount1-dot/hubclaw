@@ -1,7 +1,7 @@
 export const config = {
   port: parseInt(process.env.PORT || '3001'),
   nodeEnv: process.env.NODE_ENV || 'development',
-  mockAi: process.env.MOCK_AI === 'true',
+  mockAi: process.env.MOCK_AI !== 'false',
   corsOrigin: process.env.CORS_ORIGIN || '*',
 
   // Supabase
