@@ -245,23 +245,6 @@ The Orchestration page lets you chain agents together:
 
 ---
 
-## 🚀 Deployment
-
-### Deploy to Vercel (Recommended)
-
-HubClaw is optimized for Vercel deployment with zero configuration:
-
-1. Push your code to GitHub
-2. Log in to [Vercel](https://vercel.com)
-3. Click "New Project"
-4. Import your `allinoneacount1-dot/hubclaw` repository
-5. Set **Root Directory** to `frontend`
-6. Click "Deploy"
-
-That's it! Your HubClaw instance will be live in seconds.
-
-### Manual Deployment
-
 You can deploy HubClaw to any static hosting service:
 
 1. Build the production bundle:
