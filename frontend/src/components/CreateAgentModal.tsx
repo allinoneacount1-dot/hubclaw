@@ -46,7 +46,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -61,9 +61,9 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.95 }}
+            initial={{ opacity: 0, y: 0, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.95 }}
+            exit={{ opacity: 0, y: 0, scale: 0.9 }}
             className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border"
             style={{
               backgroundColor: 'var(--bg-secondary)',
