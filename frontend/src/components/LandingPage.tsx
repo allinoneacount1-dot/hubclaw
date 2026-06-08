@@ -1,3 +1,4 @@
+// Landing Page - HubClaw
 import { motion } from 'framer-motion';
 import { ArrowRight, Code, Zap, BarChart3, GitBranch, X } from 'lucide-react';
 import { pageTransition, containerVariants, itemVariants } from '../utils/transitions';
