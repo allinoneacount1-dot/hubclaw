@@ -1,3 +1,5 @@
+import { supabase } from '../config/supabase';
+
 export const API_BASE = import.meta.env.VITE_BACKEND_URL || '';
 
 export interface Agent {
@@ -35,7 +37,6 @@ export interface OpenRouterModel {
   context_length: number;
 }
 
-// New types for advanced features
 export interface PromptTemplate {
   id: string;
   name: string;
@@ -103,15 +104,32 @@ export interface TokenBudget {
 export type ThemeMode = 'dark' | 'light' | 'auto';
 export type ExportFormat = 'markdown' | 'json' | 'csv' | 'txt';
 
+// Helper to get auth headers
+async function getAuthHeaders() {
+  const { data } = await supabase.auth.getSession();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (data.session?.access_token) {
+    headers['Authorization'] = `Bearer ${data.session.access_token}`;
+  }
+
+  return headers;
+}
+
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { ...headers, ...options?.headers },
     ...options,
   });
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
   }
+
   return res.json();
 }
 

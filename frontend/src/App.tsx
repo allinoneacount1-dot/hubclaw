@@ -11,8 +11,10 @@ import ThemeToggle, { applyTheme } from './components/ThemeToggle';
 import Toast from './components/Toast';
 import BootScreen from './components/BootScreen';
 import LandingPage from './components/LandingPage';
+import { AuthModal } from './components/AuthModal';
 import { useAppStore } from './store';
 import { SolanaWalletProvider } from './components/SolanaWalletProvider';
+import { api } from './services/api';
 
 type View = 'dashboard' | 'command' | 'analytics' | 'prompts' | 'orchestration' | 'documentation';
 
@@ -21,8 +23,22 @@ export default function App() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isBooting, setIsBooting] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
-  const { theme, setTheme, agents, pipelines, createPipeline, deletePipeline, runPipeline, addStep, removeStep, addToast } = useAppStore();
+  const { 
+    theme, 
+    setTheme, 
+    agents, 
+    setAgents, 
+    pipelines, 
+    createPipeline, 
+    deletePipeline, 
+    runPipeline, 
+    addStep, 
+    removeStep, 
+    addToast,
+    user
+  } = useAppStore();
 
   const goToLanding = () => {
     setShowLanding(true);
@@ -33,6 +49,24 @@ export default function App() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    // Load agents from API if user is logged in
+    if (user) {
+      loadAgents();
+    }
+  }, [user]);
+
+  const loadAgents = async () => {
+    try {
+      const data = await api.getAgents();
+      if (data.agents.length > 0) {
+        setAgents(data.agents);
+      }
+    } catch (err) {
+      console.error('Failed to load agents:', err);
+    }
+  };
 
   const handleAgentClick = (agent: Agent) => {
     setSelectedAgent(agent);
@@ -56,6 +90,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <AnimatePresence>
         {isBooting ? (
           <BootScreen key="boot" onComplete={() => setIsBooting(false)} />
@@ -71,9 +106,33 @@ export default function App() {
               className="min-h-screen"
               style={{ backgroundColor: 'var(--bg-primary)' }}
             >
-              {/* Global Theme Toggle - Fixed Position */}
-              <div className="fixed top-4 right-4 z-50">
+              <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
                 <ThemeToggle theme={theme} onThemeChange={setTheme} />
+                {user ? (
+                  <button
+                    onClick={() => useAppStore.getState().signOut()}
+                    className="px-3 py-1.5 text-xs rounded-lg border transition-all hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    style={{
+                      backgroundColor: 'var(--bg-tertiary)',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-3 py-1.5 text-xs rounded-lg border transition-all hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    style={{
+                      backgroundColor: 'var(--accent)',
+                      color: 'white',
+                      border: 'none'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                )}
               </div>
 
               <Toast />

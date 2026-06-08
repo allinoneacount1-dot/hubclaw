@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Agent, OrchestrationPipeline } from './services/api';
+import { supabase } from './config/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface PipelineStep {
   id: string;
@@ -11,6 +13,13 @@ interface PipelineStep {
 }
 
 interface AppState {
+  // Auth
+  user: User | null;
+  session: any;
+  setUser: (user: User | null) => void;
+  setSession: (session: any) => void;
+  signOut: () => Promise<void>;
+
   // Theme
   theme: 'dark' | 'light' | 'auto';
   setTheme: (theme: 'dark' | 'light' | 'auto') => void;
@@ -39,6 +48,16 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      // Auth
+      user: null,
+      session: null,
+      setUser: (user) => set({ user }),
+      setSession: (session) => set({ session }),
+      signOut: async () => {
+        await supabase.auth.signOut();
+        set({ user: null, session: null });
+      },
+
       // Theme
       theme: 'dark',
       setTheme: (theme) => set({ theme }),
@@ -85,7 +104,6 @@ export const useAppStore = create<AppState>()(
             p.id === id ? { ...p, status: 'running' } : p
           ),
         }));
-        // Simulate pipeline execution
         setTimeout(() => {
           set((state) => ({
             pipelines: state.pipelines.map((p) =>
@@ -139,7 +157,6 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           toasts: [...state.toasts, { id, type, message }],
         }));
-        // Auto remove after 4 seconds
         setTimeout(() => {
           get().removeToast(id);
         }, 4000);
@@ -155,8 +172,6 @@ export const useAppStore = create<AppState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         theme: state.theme,
-        agents: state.agents,
-        pipelines: state.pipelines,
       }),
     }
   )
