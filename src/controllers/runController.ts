@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import supabase from '../config/supabaseClient.js';
 import { runOpenRouter } from '../services/openrouterService.js';
+import { searchWeb, sendDiscordWebhook } from '../services/toolsService.js';
 import { config } from '../config/environment.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import type { RunRequest, RunResponse } from '../types/index.js';
@@ -68,15 +69,29 @@ export async function runAgent(
       }
     }
 
+    let additionalContext = '';
+
+    // Execute tools if enabled
+    if (toolsConfig['Web Search'] || (agentConfig.tools_config && agentConfig.tools_config['Web Search'])) {
+      const searchResults = await searchWeb(userMessage);
+      if (searchResults.length > 0) {
+        additionalContext += '\n\nWeb Search Results:\n';
+        searchResults.forEach((result, index) => {
+          additionalContext += `${index + 1}. ${result.title} - ${result.url}\n   ${result.snippet}\n`;
+        });
+      }
+    }
+
     const finalSystemPrompt = systemPrompt || (agentConfig.system_prompt as string) || '';
     const finalModel = modelEngine || (agentConfig.model_engine as string) || config.defaultFreeModel;
     const finalTemp = temperature ?? (agentConfig.temperature as number) ?? 0.7;
     const finalMaxTokens = maxTokens ?? (agentConfig.max_tokens as number) ?? 2048;
+    const finalPrompt = `${userMessage}${additionalContext}`;
 
     // Execute via OpenRouter
     const result = await runOpenRouter({
       apiKey: openRouterApiKey || '',
-      prompt: userMessage,
+      prompt: finalPrompt,
       systemPrompt: finalSystemPrompt,
       model: finalModel,
       temperature: finalTemp,
