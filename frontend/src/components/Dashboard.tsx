@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import type { Agent } from '../services/api';
 import AgentCard from './AgentCard';
 import CreateAgentModal from './CreateAgentModal';
-import { Search, Plus, Activity, Zap, Star, GitFork, Home, Wallet } from 'lucide-react';
+import { Search, Plus, Activity, Zap, Star, GitFork, Home } from 'lucide-react';
 import { useAppStore } from '../store';
 import { DashboardSkeleton } from './Skeleton';
 import Breadcrumb from './Breadcrumb';
