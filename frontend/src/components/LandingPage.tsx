@@ -169,7 +169,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
               }}
             >
               <X size={20} />
-              Follow on X
+              Follow on X/Twitter
             </a>
           </motion.div>
 
