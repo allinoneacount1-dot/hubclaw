@@ -61,9 +61,9 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: -50, scale: 0.95 }}
             className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border"
             style={{
               backgroundColor: 'var(--bg-secondary)',
