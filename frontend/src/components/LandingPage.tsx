@@ -1,6 +1,6 @@
 // Landing Page - HubClaw
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Zap, BarChart3, GitBranch, X } from 'lucide-react';
+import { ArrowRight, Zap, BarChart3, GitBranch, Github, Twitter } from 'lucide-react';
 import { pageTransition, containerVariants, itemVariants } from '../utils/transitions';
 
 export default function LandingPage({ onEnter }: { onEnter: () => void }) {
@@ -156,7 +156,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
                 color: 'var(--text-secondary)'
               }}
             >
-              <Code size={20} />
+              <Github size={20} />
               View on GitHub
             </a>
             <a
@@ -169,7 +169,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
                 color: 'var(--text-secondary)'
               }}
             >
-              <X size={20} />
+              <Twitter size={20} />
               Follow on X/Twitter
             </a>
           </motion.div>
