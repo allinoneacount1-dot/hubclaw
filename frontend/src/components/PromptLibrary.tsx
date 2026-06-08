@@ -6,6 +6,7 @@ import {
   BookOpen, Check, FolderOpen, Star
 } from 'lucide-react';
 import Breadcrumb from './Breadcrumb';
+import { pageTransition } from '../utils/transitions';
 
 const CATEGORIES = ['All', 'Analysis', 'Development', 'Content', 'Research', 'Operations', 'Security', 'Custom'];
 
@@ -85,10 +86,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', mass: 0.5, damping: 18 }}
+      {...pageTransition}
       className="min-h-screen bg-slate-950"
     >
       <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">

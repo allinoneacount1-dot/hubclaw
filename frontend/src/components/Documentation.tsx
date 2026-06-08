@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import { pageTransition } from '../utils/transitions';
 
 interface DocumentationProps {
   onBack: () => void;
@@ -8,10 +9,7 @@ interface DocumentationProps {
 export default function Documentation({ onBack }: DocumentationProps) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', mass: 0.5, damping: 18 }}
+      {...pageTransition}
       className="min-h-screen"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >

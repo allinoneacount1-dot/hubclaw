@@ -1,22 +1,11 @@
-import { motion, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Code, Zap, BarChart3, GitBranch } from 'lucide-react';
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, mass: 0.5, damping: 18 } }
-};
+import { pageTransition, containerVariants, itemVariants } from '../utils/transitions';
 
 export default function LandingPage({ onEnter }: { onEnter: () => void }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      {...pageTransition}
       className="min-h-screen relative overflow-hidden"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >

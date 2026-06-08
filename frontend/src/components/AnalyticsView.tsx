@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, Tooltip, PieChart as RePieChart, Pie, Cell
 } from 'recharts';
 import Breadcrumb from './Breadcrumb';
+import { pageTransition } from '../utils/transitions';
 
 interface AnalyticsViewProps {
   onBack: () => void;
@@ -102,10 +103,7 @@ export default function AnalyticsView({ onBack }: AnalyticsViewProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', mass: 0.5, damping: 18 }}
+      {...pageTransition}
       className="min-h-screen"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >

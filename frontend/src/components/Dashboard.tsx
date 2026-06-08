@@ -8,6 +8,7 @@ import { Search, Plus, Activity, Zap, Star, GitFork, Home } from 'lucide-react';
 import { useAppStore } from '../store';
 import { DashboardSkeleton } from './Skeleton';
 import Breadcrumb from './Breadcrumb';
+import { pageTransition } from '../utils/transitions';
 
 const MOCK_AGENTS: Agent[] = [
   { id: '1', user_id: 'demo', name: 'Data Analyst Agent', description: 'Analyzes datasets and generates insights with Python sandbox and web search.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 4096, tools_config: { 'Web Search': true, 'Python Sandbox': true }, stars: 12, system_prompt: 'You are a data analyst.', created_at: '2026-06-01T00:00:00Z' },
@@ -106,10 +107,7 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', mass: 0.5, damping: 18 }}
+      {...pageTransition}
       className="min-h-screen"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >

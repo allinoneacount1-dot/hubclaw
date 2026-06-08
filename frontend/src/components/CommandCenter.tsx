@@ -11,6 +11,7 @@ import {
 import TaskQueue from './TaskQueue';
 import OutputFormatter from './OutputFormatter';
 import SafetyGuardrails from './SafetyGuardrails';
+import { pageTransition } from '../utils/transitions';
 
 interface CommandCenterProps {
   agent: Agent;
@@ -263,10 +264,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', mass: 0.5, damping: 18 }}
+      {...pageTransition}
       className="min-h-screen"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
