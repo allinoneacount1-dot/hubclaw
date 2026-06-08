@@ -12,6 +12,7 @@ import Toast from './components/Toast';
 import BootScreen from './components/BootScreen';
 import LandingPage from './components/LandingPage';
 import { useAppStore } from './store';
+import { SolanaWalletProvider } from './components/SolanaWalletProvider';
 
 type View = 'dashboard' | 'command' | 'analytics' | 'prompts' | 'orchestration' | 'documentation';
 
@@ -61,73 +62,75 @@ export default function App() {
         ) : showLanding ? (
           <LandingPage key="landing" onEnter={() => setShowLanding(false)} />
         ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, type: "spring" }}
-            key="main-app"
-            className="min-h-screen"
-            style={{ backgroundColor: 'var(--bg-primary)' }}
-          >
-            {/* Global Theme Toggle - Fixed Position */}
-            <div className="fixed top-4 right-4 z-50">
-              <ThemeToggle theme={theme} onThemeChange={setTheme} />
-            </div>
+          <SolanaWalletProvider>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, type: "spring" }}
+              key="main-app"
+              className="min-h-screen"
+              style={{ backgroundColor: 'var(--bg-primary)' }}
+            >
+              {/* Global Theme Toggle - Fixed Position */}
+              <div className="fixed top-4 right-4 z-50">
+                <ThemeToggle theme={theme} onThemeChange={setTheme} />
+              </div>
 
-            <Toast />
+              <Toast />
 
-            <AnimatePresence mode="wait">
-              {view === 'dashboard' && (
-                <Dashboard
-                  key="dashboard"
-                  onAgentClick={handleAgentClick}
-                  onAnalyticsClick={() => setView('analytics')}
-                  onPromptsClick={() => setView('prompts')}
-                  onOrchestrationClick={() => setView('orchestration')}
-                  onGoToLanding={goToLanding}
-                  onDocumentationClick={() => setView('documentation')}
-                />
-              )}
-              {view === 'command' && selectedAgent && (
-                <CommandCenter
-                  key="command"
-                  agent={selectedAgent}
-                  onBack={handleBack}
-                />
-              )}
-              {view === 'analytics' && (
-                <AnalyticsView
-                  key="analytics"
-                  onBack={handleBack}
-                />
-              )}
-              {view === 'prompts' && (
-                <PromptLibrary
-                  key="prompts"
-                  onBack={handleBack}
-                />
-              )}
-              {view === 'orchestration' && (
-                <OrchestrationPage
-                  key="orchestration"
-                  agents={agents}
-                  pipelines={pipelines}
-                  onCreatePipeline={createPipeline}
-                  onDeletePipeline={deletePipeline}
-                  onRunPipeline={runPipeline}
-                  onAddStep={handleAddStep}
-                  onRemoveStep={removeStep}
-                  onBack={handleBack}
-                />
-              )}
-              {view === 'documentation' && (
-                <Documentation
-                  key="documentation"
-                  onBack={handleBack}
-                />
-              )}
-            </AnimatePresence>
-          </motion.div>
+              <AnimatePresence mode="wait">
+                {view === 'dashboard' && (
+                  <Dashboard
+                    key="dashboard"
+                    onAgentClick={handleAgentClick}
+                    onAnalyticsClick={() => setView('analytics')}
+                    onPromptsClick={() => setView('prompts')}
+                    onOrchestrationClick={() => setView('orchestration')}
+                    onGoToLanding={goToLanding}
+                    onDocumentationClick={() => setView('documentation')}
+                  />
+                )}
+                {view === 'command' && selectedAgent && (
+                  <CommandCenter
+                    key="command"
+                    agent={selectedAgent}
+                    onBack={handleBack}
+                  />
+                )}
+                {view === 'analytics' && (
+                  <AnalyticsView
+                    key="analytics"
+                    onBack={handleBack}
+                  />
+                )}
+                {view === 'prompts' && (
+                  <PromptLibrary
+                    key="prompts"
+                    onBack={handleBack}
+                  />
+                )}
+                {view === 'orchestration' && (
+                  <OrchestrationPage
+                    key="orchestration"
+                    agents={agents}
+                    pipelines={pipelines}
+                    onCreatePipeline={createPipeline}
+                    onDeletePipeline={deletePipeline}
+                    onRunPipeline={runPipeline}
+                    onAddStep={handleAddStep}
+                    onRemoveStep={removeStep}
+                    onBack={handleBack}
+                  />
+                )}
+                {view === 'documentation' && (
+                  <Documentation
+                    key="documentation"
+                    onBack={handleBack}
+                  />
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </SolanaWalletProvider>
         )}
       </AnimatePresence>
     </div>

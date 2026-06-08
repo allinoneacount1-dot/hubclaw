@@ -49,7 +49,7 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen items-center justify-center px-6">
+      <div className="relative z-50 flex flex-col min-h-screen items-center justify-center px-6">
         <motion.div
           variants={containerVariants}
           initial="hidden"
