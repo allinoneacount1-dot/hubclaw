@@ -29,14 +29,26 @@ export async function runAgent(
       return;
     }
 
+    // Reset daily tokens if needed
+    await supabase.rpc('reset_daily_tokens');
+
     // Get OpenRouter API key: user profile → env fallback
     let openRouterApiKey = config.openRouterApiKey;
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('openrouter_api_key, encrypted_gemini_api_key')
+      .select('openrouter_api_key, encrypted_gemini_api_key, daily_token_limit, daily_tokens_used')
       .eq('id', userId)
       .single();
+
+    // Check token budget
+    if (profile) {
+      const { daily_token_limit, daily_tokens_used } = profile;
+      if (daily_tokens_used && daily_token_limit && daily_tokens_used >= daily_token_limit) {
+        res.status(429).json({ error: 'Daily token limit exceeded' });
+        return;
+      }
+    }
 
     const userApiKey = profile?.openrouter_api_key || profile?.encrypted_gemini_api_key;
     if (userApiKey) {
@@ -72,6 +84,16 @@ export async function runAgent(
     });
 
     const latencyMs = Date.now() - startTime;
+
+    // Update token usage (fire and forget)
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          daily_tokens_used: (profile?.daily_tokens_used || 0) + result.tokensUsed,
+        })
+        .eq('id', userId);
+    } catch { /* ignore */ }
 
     // Log telemetry (fire and forget)
     try {

@@ -4,6 +4,10 @@ import helmet from 'helmet';
 import agentRoutes from './routes/agentRoutes.js';
 import runRoutes from './routes/runRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import promptsRoutes from './routes/promptsRoutes.js';
+import orchestrationRoutes from './routes/orchestrationRoutes.js';
+import tasksRoutes from './routes/tasksRoutes.js';
+import budgetRoutes from './routes/budgetRoutes.js';
 import config from './config/environment.js';
 
 const app = express();
@@ -32,6 +36,10 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/agents', agentRoutes);
 app.use('/api/run', runRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/prompts', promptsRoutes);
+app.use('/api/orchestration', orchestrationRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/budget', budgetRoutes);
 
 // 404 handler
 app.use((_req, res) => {
