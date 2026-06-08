@@ -1,3 +1,4 @@
+// HubClaw Vercel API Entry Point
 import { createClient } from '@supabase/supabase-js';
 
 const SB_URL = process.env.SUPABASE_URL || '';
