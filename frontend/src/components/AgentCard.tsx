@@ -15,41 +15,63 @@ export default function AgentCard({ agent, onClick, index }: AgentCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, type: 'spring', mass: 0.5, damping: 18 }}
       onClick={() => onClick(agent)}
-      className="group relative cursor-pointer rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5 transition-all duration-300 hover:border-cyan-400/30 hover:bg-slate-900/50"
-      style={{ willChange: 'transform' }}
+      className="group relative cursor-pointer rounded-lg border backdrop-blur-md p-5 transition-all duration-300"
+      style={{ 
+        willChange: 'transform',
+        backgroundColor: 'var(--bg-tertiary)',
+        borderColor: 'var(--border-color)'
+      }}
       whileHover={{ y: -2 }}
     >
       {/* Hover glow effect */}
-      <div className="absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.06)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100" 
+        style={{
+          background: 'radial-gradient(ellipse at center, var(--accent-soft) 0%, transparent 70%)'
+        }}
+      />
 
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-slate-800/50 flex items-center justify-center text-cyan-400">
+            <div 
+              className="w-8 h-8 rounded-md flex items-center justify-center"
+              style={{ 
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--accent)'
+              }}
+            >
               <Sparkles size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors">
+              <h3 
+                className="text-sm font-medium transition-colors"
+                style={{ 
+                  color: 'var(--text-primary)',
+                  '--hover-color': 'var(--accent)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              >
                 {agent.name}
               </h3>
-              <p className="text-xs text-slate-500 font-mono">
+              <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                 {agent.model_engine || 'gemini-1.5-flash'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-xs text-slate-500">
+          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
             <span>★</span>
             <span>{agent.stars || 0}</span>
           </div>
         </div>
 
         {agent.description && (
-          <p className="text-xs text-slate-400 line-clamp-2 mb-3">
+          <p className="text-xs line-clamp-2 mb-3" style={{ color: 'var(--text-secondary)' }}>
             {agent.description}
           </p>
         )}
 
-        <div className="flex items-center gap-3 text-xs text-slate-500 font-mono">
+        <div className="flex items-center gap-3 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
           <span>temp: {agent.temperature ?? 0.7}</span>
           <span>tokens: {agent.max_tokens ?? 2048}</span>
         </div>
@@ -62,7 +84,12 @@ export default function AgentCard({ agent, onClick, index }: AgentCardProps) {
               .map(([k]) => (
                 <span
                   key={k}
-                  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800/50 text-slate-400 border border-slate-800/30"
+                  className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
+                  style={{ 
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-secondary)',
+                    borderColor: 'var(--border-color)'
+                  }}
                 >
                   {k.replace(/_/g, ' ')}
                 </span>

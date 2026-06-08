@@ -3,14 +3,11 @@ import { motion } from 'framer-motion';
 import { api } from '../services/api';
 import type { Agent } from '../services/api';
 import AgentCard from './AgentCard';
-import { Search, Plus, Activity, Zap, Star, GitFork } from 'lucide-react';
-
-interface DashboardProps {
-  onAgentClick: (agent: Agent) => void;
-  onAnalyticsClick: () => void;
-  onPromptsClick: () => void;
-  onOrchestrationClick: () => void;
-}
+import CreateAgentModal from './CreateAgentModal';
+import { Search, Plus, Activity, Zap, Star, GitFork, Home } from 'lucide-react';
+import { useAppStore } from '../store';
+import { DashboardSkeleton } from './Skeleton';
+import Breadcrumb from './Breadcrumb';
 
 const MOCK_AGENTS: Agent[] = [
   { id: '1', user_id: 'demo', name: 'Data Analyst Agent', description: 'Analyzes datasets and generates insights with Python sandbox and web search.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 4096, tools_config: { 'Web Search': true, 'Python Sandbox': true }, stars: 12, system_prompt: 'You are a data analyst.', created_at: '2026-06-01T00:00:00Z' },
@@ -45,10 +42,19 @@ const MOCK_AGENTS: Agent[] = [
   { id: '30', user_id: 'demo', name: 'Workflow Orchestrator', description: 'Chains multiple agents together for complex multi-step automation.', model_engine: 'gemini-1.5-pro', temperature: 0.3, max_tokens: 8192, tools_config: { 'Web Search': true, 'Python Sandbox': true, 'GitHub Repo Manager': true, 'Discord Webhook': true }, stars: 88, system_prompt: 'You are a workflow orchestrator.', created_at: '2026-06-01T00:00:00Z' },
 ];
 
-export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsClick, onOrchestrationClick }: DashboardProps) {
-  const [agents, setAgents] = useState<Agent[]>([]);
+interface DashboardProps {
+  onAgentClick: (agent: Agent) => void;
+  onAnalyticsClick: () => void;
+  onPromptsClick: () => void;
+  onOrchestrationClick: () => void;
+  onGoToLanding: () => void;
+}
+
+export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsClick, onOrchestrationClick, onGoToLanding }: DashboardProps) {
+  const { agents, setAgents, addAgent, addToast } = useAppStore();
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     loadAgents();
@@ -57,12 +63,34 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
   const loadAgents = async () => {
     try {
       const data = await api.getAgents();
-      setAgents(data.agents.length > 0 ? data.agents : MOCK_AGENTS);
+      const combinedAgents = data.agents.length > 0 ? data.agents : MOCK_AGENTS;
+      setAgents(combinedAgents);
     } catch (err) {
       console.error('Failed to load agents:', err);
-      setAgents(MOCK_AGENTS);
+      if (agents.length === 0) {
+        setAgents(MOCK_AGENTS);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateAgent = async (data: Omit<Agent, 'id' | 'user_id' | 'created_at' | 'stars'>) => {
+    try {
+      const res = await api.createAgent(data);
+      addAgent(res.agent);
+      addToast('success', 'Agent created successfully!');
+    } catch (err) {
+      // Fallback to local creation
+      const newAgent: Agent = {
+        id: `agent-${Date.now()}`,
+        user_id: 'local',
+        ...data,
+        created_at: new Date().toISOString(),
+        stars: 0
+      };
+      addAgent(newAgent);
+      addToast('success', 'Agent created locally!');
     }
   };
 
@@ -71,75 +99,121 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
     a.description?.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ type: 'spring', mass: 0.5, damping: 18 }}
-      className="min-h-screen bg-slate-950"
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       {/* Top Bar */}
-      <header className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
+      <header className="sticky top-0 z-20 backdrop-blur-md border-b" 
+        style={{ 
+          backgroundColor: 'color-mix(in srgb, var(--bg-primary) 80%, transparent)',
+          borderBottomColor: 'var(--border-color)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="HubClaw" className="h-8 w-8 rounded-lg object-contain bg-transparent" />
-            <motion.h1 className="text-lg font-light tracking-widest text-slate-300 animate-breathe">
+            <img src="/logo-hubclaw.svg" alt="HubClaw" className="h-10 w-10 rounded-lg object-contain" style={{ filter: 'drop-shadow(0 0 5px rgba(139, 92, 246, 0.5))' }} />
+            <motion.h1 
+              className="text-lg font-light tracking-widest animate-breathe" 
+              style={{ color: 'var(--text-secondary)' }}
+            >
               HubClaw
             </motion.h1>
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={onGoToLanding}
+              className="p-2 border rounded-full transition-all duration-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              style={{
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-secondary)'
+              }}
+              title="Back to Landing Page"
+              aria-label="Back to Landing Page"
+            >
+              <Home size={16} />
+            </button>
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search agents..."
-                className="w-64 pl-9 pr-4 py-2 bg-slate-900/30 border border-slate-800/30 rounded-full text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/30 focus:w-72 transition-all duration-300"
+                className="w-64 pl-9 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:w-72 transition-all duration-300"
+                style={{
+                  backgroundColor: 'var(--bg-tertiary)',
+                  borderColor: 'var(--border-color)',
+                  color: 'var(--text-primary)'
+                }}
+                aria-label="Search agents"
               />
             </div>
 
             <button
-              onClick={() => {
-                const name = prompt('Agent name:');
-                if (name) {
-                  api.createAgent({ name, description: 'New agent' }).then((res) => {
-                    onAgentClick(res.agent);
-                  }).catch(() => {});
-                }
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 text-sm border rounded-full transition-all duration-300 flex items-center gap-1.5 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              style={{
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-secondary)'
               }}
-              className="px-4 py-2 text-sm text-slate-300 hover:text-cyan-400 border border-slate-800/30 hover:border-cyan-400/30 rounded-full transition-all duration-300 flex items-center gap-1.5"
+              aria-label="Initialize new agent"
             >
               <Plus size={14} />
               Initialize
             </button>
+            
+            {/* Create Agent Modal */}
+            <CreateAgentModal 
+              isOpen={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              onCreate={handleCreateAgent}
+            />
           </div>
         </div>
       </header>
 
       {/* Global Navigation */}
       <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center gap-6">
-          <button className="text-sm text-cyan-400 border-b border-cyan-400/30 pb-0.5">
+        <Breadcrumb items={[{ label: 'Dashboard' }]} />
+        <div className="flex items-center gap-6 mt-4">
+          <button 
+            className="text-sm pb-0.5 border-b"
+            style={{ 
+              color: 'var(--accent)',
+              borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)'
+            }}
+          >
             Dashboard
           </button>
           <button
             onClick={onAnalyticsClick}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-sm transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--text-muted)' }}
           >
             Global Analytics
           </button>
           <button
             onClick={onPromptsClick}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-sm transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--text-muted)' }}
           >
             Prompt Library
           </button>
           <button
             onClick={onOrchestrationClick}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-sm transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--text-muted)' }}
           >
             Orchestration
           </button>
@@ -151,7 +225,8 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-sm font-light text-slate-500 mb-1"
+          className="text-sm font-light mb-1"
+          style={{ color: 'var(--text-muted)' }}
         >
           Welcome back, Operator.
         </motion.p>
@@ -159,22 +234,23 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center gap-4 text-xs font-mono text-slate-600"
+          className="flex items-center gap-4 text-xs font-mono"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <span className="flex items-center gap-1.5">
-            <Activity size={12} className="text-cyan-400" />
+            <Activity size={12} style={{ color: 'var(--accent)' }} />
             {agents.length} Active
           </span>
           <span className="flex items-center gap-1.5">
-            <Zap size={12} className="text-cyan-400" />
+            <Zap size={12} style={{ color: 'var(--accent)' }} />
             4.2k Telemetry
           </span>
           <span className="flex items-center gap-1.5">
-            <Star size={12} className="text-amber-400/50" />
+            <Star size={12} style={{ color: 'color-mix(in srgb, orange 50%, var(--text-muted))' }} />
             {agents.reduce((sum, a) => sum + (a.stars || 0), 0)} Stars
           </span>
           <span className="flex items-center gap-1.5">
-            <GitFork size={12} className="text-slate-500" />
+            <GitFork size={12} style={{ color: 'var(--text-muted)' }} />
             {agents.length} Models
           </span>
         </motion.div>
@@ -182,22 +258,16 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
 
       {/* Agent Registry Grid */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
-        {loading ? (
-          <div className="flex items-center justify-center py-20 text-slate-600 text-sm font-mono">
-            Loading agents...
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredAgents.map((agent, i) => (
-              <AgentCard
-                key={agent.id}
-                agent={agent}
-                index={i}
-                onClick={onAgentClick}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredAgents.map((agent, i) => (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              index={i}
+              onClick={onAgentClick}
+            />
+          ))}
+        </div>
       </div>
     </motion.div>
   );

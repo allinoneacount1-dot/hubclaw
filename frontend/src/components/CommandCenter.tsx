@@ -6,7 +6,7 @@ import {
   ArrowLeft, Copy, Rocket, Star, GitFork,
   Play, Loader2, Check, Settings, Terminal,
   History, GitBranch, ListOrdered, Shield,
-  ChevronDown, ChevronRight, MessageSquare
+  ChevronDown, ChevronRight, MessageSquare, Code
 } from 'lucide-react';
 import TaskQueue from './TaskQueue';
 import OutputFormatter from './OutputFormatter';
@@ -36,6 +36,17 @@ interface ConversationBranch {
   parentMessageId?: string;
 }
 
+// Mock AI responses for fallback
+const mockResponses = [
+  "That's a great question! Let me think about that...",
+  "I understand what you're asking. Here's what I think:",
+  "Interesting! I can help you with that.",
+  "Let me provide some insights on that topic.",
+  "Thanks for reaching out! Here's my analysis.",
+  "That's an excellent point to consider!",
+  "I'm happy to help with that request."
+];
+
 export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
   const [systemPrompt, setSystemPrompt] = useState(agent.system_prompt || '');
   const [modelEngine, setModelEngine] = useState(agent.model_engine || 'gemini-1.5-flash');
@@ -64,6 +75,20 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     model: true, prompt: true, tools: true, queue: false, history: false, safety: false
   });
+
+  // Load chat history from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem(`hubclaw-chat-${agent.id}`);
+    if (savedHistory) {
+      const parsed = JSON.parse(savedHistory);
+      setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+    }
+  }, [agent.id]);
+
+  // Save chat history to localStorage
+  useEffect(() => {
+    localStorage.setItem(`hubclaw-chat-${agent.id}`, JSON.stringify(messages));
+  }, [messages, agent.id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -103,17 +128,31 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
     }
     setInput('');
     setIsRunning(true);
+    const startTime = Date.now();
 
     try {
-      const result: RunResponse = await api.runAgent({
-        agentId: agent.id,
-        systemPrompt,
-        userMessage: input,
-        modelEngine,
-        temperature,
-        maxTokens,
-        toolsConfig: tools,
-      });
+      let result: RunResponse;
+      try {
+        result = await api.runAgent({
+          agentId: agent.id,
+          systemPrompt,
+          userMessage: input,
+          modelEngine,
+          temperature,
+          maxTokens,
+          toolsConfig: tools,
+        });
+      } catch (apiError) {
+        // Fallback to mock response
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+        const mockResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+        result = {
+          response: `${mockResponse}\n\nHere's a response for: "${input.slice(0, 50)}..."\n\n(This is a mock response - to get real responses, configure your API keys!)`,
+          tokensUsed: Math.floor(Math.random() * 200) + 50,
+          latencyMs: Date.now() - startTime,
+          status: 'success'
+        };
+      }
 
       const agentMsg: ChatMessage = {
         id: `msg-${Date.now()}-resp`,
@@ -228,22 +267,42 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ type: 'spring', mass: 0.5, damping: 18 }}
-      className="min-h-screen bg-slate-950"
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       {/* Top Bar */}
-      <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
+      <div 
+        className="sticky top-0 z-20 backdrop-blur-md border-b"
+        style={{ 
+          backgroundColor: 'color-mix(in srgb, var(--bg-primary) 80%, transparent)',
+          borderBottomColor: 'var(--border-color)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+            className="flex items-center gap-2 text-sm transition-colors hover:text-cyan-400"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <ArrowLeft size={16} />
             <span className="font-mono text-xs">Terminal Dashboard</span>
           </button>
 
           <div className="flex items-center gap-3">
+            {/* GitHub Link */}
+            <a
+              href="https://github.com/allinoneacount1-dot/hubclaw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-md transition-all hover:bg-slate-800/30 hover:text-[var(--accent)]"
+              style={{ color: 'var(--text-secondary)' }}
+              title="View on GitHub"
+            >
+              <Code size={16} />
+            </a>
+            
             {/* Stats inline */}
-            <div className="hidden md:flex items-center gap-3 text-[10px] font-mono text-slate-600 mr-3">
+            <div className="hidden md:flex items-center gap-3 text-[10px] font-mono mr-3" style={{ color: 'var(--text-muted)' }}>
               <span>{displayMessages.filter(m => m.role === 'agent').length} runs</span>
               <span>{totalTokensUsed.toLocaleString()} tokens</span>
               <span>{Math.round(avgLatency)}ms avg</span>
@@ -251,17 +310,27 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
 
             <button
               onClick={handleCopyEndpoint}
-              className="p-2 rounded-md hover:bg-slate-800/50 text-slate-400 hover:text-cyan-400 transition-all"
+              className="p-2 rounded-md transition-all hover:text-cyan-400"
+              style={{ color: 'var(--text-secondary)' }}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
             </button>
-            <button className="p-2 rounded-md hover:bg-slate-800/50 text-slate-400 hover:text-cyan-400 transition-all">
+            <button 
+              className="p-2 rounded-md transition-all hover:text-cyan-400"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Rocket size={16} />
             </button>
-            <button className="p-2 rounded-md hover:bg-slate-800/50 text-slate-400 hover:text-cyan-400 transition-all">
+            <button 
+              className="p-2 rounded-md transition-all hover:text-cyan-400"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <Star size={16} />
             </button>
-            <button className="p-2 rounded-md hover:bg-slate-800/50 text-slate-400 hover:text-cyan-400 transition-all">
+            <button 
+              className="p-2 rounded-md transition-all hover:text-cyan-400"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <GitFork size={16} />
             </button>
           </div>
@@ -271,14 +340,17 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
       {/* Title Block */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-xl font-medium text-slate-200">
-            <span className="text-slate-500">operator</span>
-            <span className="text-slate-600"> / </span>
+          <h1 
+            className="text-xl font-medium" 
+            style={{ color: 'var(--text-primary)' }}
+          >
+            <span style={{ color: 'var(--text-muted)' }}>operator</span>
+            <span style={{ color: 'var(--text-muted)' }}> / </span>
             {agent.name}
           </h1>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot" />
-            <span className="text-xs font-mono text-emerald-400/70">Synced</span>
+            <span className="text-xs font-mono" style={{ color: 'color-mix(in srgb, #10b981 70%, var(--text-muted))' }}>Synced</span>
           </div>
         </div>
       </div>
@@ -294,7 +366,13 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
             className="space-y-4"
           >
             {/* Tab Navigation */}
-            <div className="flex gap-1 bg-slate-900/30 rounded-lg p-1 border border-slate-800/30">
+            <div 
+              className="flex gap-1 rounded-lg p-1 border"
+              style={{ 
+                backgroundColor: 'var(--bg-tertiary)', 
+                borderColor: 'var(--border-color)' 
+              }}
+            >
               {[
                 { id: 'config' as const, label: 'Config', icon: Settings },
                 { id: 'queue' as const, label: 'Queue', icon: ListOrdered, count: tasks.filter(t => t.status === 'queued').length },
@@ -306,16 +384,32 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-mono rounded-md transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-cyan-400/10 text-cyan-400 border border-cyan-400/20'
-                        : 'text-slate-500 hover:text-slate-300 border border-transparent'
-                    }`}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-mono rounded-md transition-all border"
+                    style={{
+                      ...(activeTab === tab.id
+                        ? {
+                            backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                            color: 'var(--accent)',
+                            borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)'
+                          }
+                        : {
+                            color: 'var(--text-muted)',
+                            borderColor: 'transparent'
+                          })
+                    }}
                   >
                     <Icon size={12} />
                     {tab.label}
                     {tab.count !== undefined && tab.count > 0 && (
-                      <span className="text-[9px] bg-cyan-400/20 text-cyan-400 px-1 rounded-full">{tab.count}</span>
+                      <span 
+                        className="text-[9px] px-1 rounded-full"
+                        style={{
+                          backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+                          color: 'var(--accent)'
+                        }}
+                      >
+                        {tab.count}
+                      </span>
                     )}
                   </button>
                 );
@@ -333,14 +427,20 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   className="space-y-4"
                 >
                   {/* Model Configuration */}
-                  <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
+                  <div 
+                    className="rounded-lg border p-5"
+                    style={{
+                      borderColor: 'var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)'
+                    }}
+                  >
                     <button
                       onClick={() => toggleSection('model')}
                       className="flex items-center gap-2 mb-4 w-full"
                     >
-                      {expandedSections.model ? <ChevronDown size={12} className="text-slate-500" /> : <ChevronRight size={12} className="text-slate-500" />}
-                      <Settings size={14} className="text-cyan-400" />
-                      <h3 className="text-sm font-medium text-slate-300">Model Configuration</h3>
+                      {expandedSections.model ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
+                      <Settings size={14} style={{ color: 'var(--accent)' }} />
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Model Configuration</h3>
                     </button>
 
                     <AnimatePresence>
@@ -352,11 +452,16 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                           className="space-y-4"
                         >
                           <div>
-                            <label className="text-xs font-mono text-slate-500 mb-1.5 block">Engine</label>
+                            <label className="text-xs font-mono block mb-1.5" style={{ color: 'var(--text-muted)' }}>Engine</label>
                             <select
                               value={modelEngine}
                               onChange={(e) => setModelEngine(e.target.value)}
-                              className="w-full bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-cyan-400/30 transition-colors"
+                              className="w-full rounded-md px-3 py-2 text-sm focus:outline-none border"
+                              style={{
+                                backgroundColor: 'var(--bg-tertiary)',
+                                borderColor: 'var(--border-color)',
+                                color: 'var(--text-primary)'
+                              }}
                             >
                               <optgroup label="Google Gemini">
                                 <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
@@ -398,22 +503,22 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
 
                           <div>
                             <div className="flex justify-between items-center mb-1.5">
-                              <label className="text-xs font-mono text-slate-500">Temperature</label>
-                              <motion.span key={temperature} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-mono text-cyan-400">
+                              <label className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Temperature</label>
+                              <motion.span key={temperature} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-mono" style={{ color: 'var(--accent)' }}>
                                 {temperature.toFixed(2)}
                               </motion.span>
                             </div>
-                            <input type="range" min="0" max="2" step="0.01" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full accent-cyan-400 bg-slate-800/30 h-1 rounded-full appearance-none cursor-pointer" />
+                            <input type="range" min="0" max="2" step="0.01" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1 rounded-full appearance-none cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
                           </div>
 
                           <div>
                             <div className="flex justify-between items-center mb-1.5">
-                              <label className="text-xs font-mono text-slate-500">Max Tokens</label>
-                              <motion.span key={maxTokens} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-mono text-cyan-400">
+                              <label className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Max Tokens</label>
+                              <motion.span key={maxTokens} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-mono" style={{ color: 'var(--accent)' }}>
                                 {maxTokens}
                               </motion.span>
                             </div>
-                            <input type="range" min="256" max="8192" step="256" value={maxTokens} onChange={(e) => setMaxTokens(parseInt(e.target.value))} className="w-full accent-cyan-400 bg-slate-800/30 h-1 rounded-full appearance-none cursor-pointer" />
+                            <input type="range" min="256" max="8192" step="256" value={maxTokens} onChange={(e) => setMaxTokens(parseInt(e.target.value))} className="w-full h-1 rounded-full appearance-none cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
                           </div>
                         </motion.div>
                       )}
@@ -421,16 +526,27 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   </div>
 
                   {/* System Directive */}
-                  <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
+                  <div 
+                    className="rounded-lg border p-5"
+                    style={{
+                      borderColor: 'var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)'
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <button onClick={() => toggleSection('prompt')} className="flex items-center gap-2">
-                        {expandedSections.prompt ? <ChevronDown size={12} className="text-slate-500" /> : <ChevronRight size={12} className="text-slate-500" />}
-                        <h3 className="text-sm font-medium text-slate-300">System Directive</h3>
+                        {expandedSections.prompt ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
+                        <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>System Directive</h3>
                       </button>
                       <select
                         onChange={(e) => { const val = e.target.value; if (val) setSystemPrompt(val); }}
                         value=""
-                        className="text-xs font-mono bg-slate-900/50 border border-slate-800/30 rounded px-2 py-1 text-slate-400 focus:outline-none"
+                        className="text-xs font-mono rounded px-2 py-1 border focus:outline-none"
+                        style={{
+                          backgroundColor: 'var(--bg-tertiary)',
+                          borderColor: 'var(--border-color)',
+                          color: 'var(--text-secondary)'
+                        }}
                       >
                         <option value="">Load template...</option>
                         <option value="You are an expert data analyst. Your role is to analyze datasets, identify patterns, generate statistical insights, and produce clear visualizations. Always validate your findings with quantitative evidence before presenting conclusions.">Data Analyst</option>
@@ -467,7 +583,11 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                             value={systemPrompt}
                             onChange={(e) => setSystemPrompt(e.target.value)}
                             placeholder="Define agent behavior, personality, and constraints..."
-                            className="w-full h-40 bg-transparent border-0 text-sm font-mono text-slate-400 resize-none focus:outline-none placeholder:text-slate-600"
+                            className="w-full h-40 bg-transparent border-0 text-sm font-mono resize-none focus:outline-none"
+                            style={{
+                              color: 'var(--text-secondary)',
+                              placeholderColor: 'var(--text-muted)'
+                            }}
                           />
                         </motion.div>
                       )}
@@ -475,23 +595,33 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   </div>
 
                   {/* Neural Tools */}
-                  <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
+                  <div 
+                    className="rounded-lg border p-5"
+                    style={{
+                      borderColor: 'var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)'
+                    }}
+                  >
                     <button onClick={() => toggleSection('tools')} className="flex items-center gap-2 mb-4 w-full">
-                      {expandedSections.tools ? <ChevronDown size={12} className="text-slate-500" /> : <ChevronRight size={12} className="text-slate-500" />}
-                      <h3 className="text-sm font-medium text-slate-300">Neural Tools</h3>
+                      {expandedSections.tools ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Neural Tools</h3>
                     </button>
                     <AnimatePresence>
                       {expandedSections.tools && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="space-y-3">
                           {Object.entries(tools).map(([tool, enabled]) => (
                             <motion.div key={tool} className="flex items-center justify-between" whileTap={{ scale: 0.98 }}>
-                              <span className="text-sm text-slate-400">{tool}</span>
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{tool}</span>
                               <button
                                 onClick={() => toggleTool(tool)}
-                                className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${enabled ? 'bg-cyan-400/30' : 'bg-slate-800/50'}`}
+                                className="relative w-10 h-5 rounded-full transition-colors duration-200"
+                                style={{
+                                  backgroundColor: enabled ? 'color-mix(in srgb, var(--accent) 30%, transparent)' : 'var(--bg-tertiary)'
+                                }}
                               >
                                 <motion.div
-                                  className={`absolute top-0.5 w-4 h-4 rounded-full ${enabled ? 'bg-cyan-400' : 'bg-slate-600'}`}
+                                  className="absolute top-0.5 w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: enabled ? 'var(--accent)' : 'var(--text-muted)' }}
                                   animate={{ x: enabled ? 22 : 2 }}
                                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                                 />
@@ -508,10 +638,16 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
               {/* Queue Tab */}
               {activeTab === 'queue' && (
                 <motion.div key="queue" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
+                  <div 
+                    className="rounded-lg border p-5"
+                    style={{
+                      borderColor: 'var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)'
+                    }}
+                  >
                     <div className="flex items-center gap-2 mb-4">
-                      <ListOrdered size={14} className="text-cyan-400" />
-                      <h3 className="text-sm font-medium text-slate-300">Task Queue</h3>
+                      <ListOrdered size={14} style={{ color: 'var(--accent)' }} />
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Task Queue</h3>
                     </div>
                     <TaskQueue tasks={tasks} onAddTask={handleAddTask} onRemoveTask={handleRemoveTask} />
                   </div>
@@ -521,21 +657,36 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
               {/* History Tab */}
               {activeTab === 'history' && (
                 <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                  <div className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-5">
+                  <div 
+                    className="rounded-lg border p-5"
+                    style={{
+                      borderColor: 'var(--border-color)',
+                      backgroundColor: 'var(--bg-secondary)'
+                    }}
+                  >
                     <div className="flex items-center gap-2 mb-4">
-                      <GitBranch size={14} className="text-cyan-400" />
-                      <h3 className="text-sm font-medium text-slate-300">Conversation Branches</h3>
+                      <GitBranch size={14} style={{ color: 'var(--accent)' }} />
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Conversation Branches</h3>
                     </div>
 
                     {/* Branch Selector */}
                     <div className="space-y-2 mb-4">
                       <button
                         onClick={() => setActiveBranchId('main')}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono transition-all ${
-                          activeBranchId === 'main'
-                            ? 'bg-cyan-400/10 text-cyan-400 border border-cyan-400/20'
-                            : 'bg-slate-900/30 text-slate-500 border border-slate-800/30 hover:text-slate-300'
-                        }`}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono transition-all border"
+                        style={{
+                          ...(activeBranchId === 'main'
+                            ? {
+                                backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                                color: 'var(--accent)',
+                                borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)'
+                              }
+                            : {
+                                backgroundColor: 'var(--bg-tertiary)',
+                                color: 'var(--text-muted)',
+                                borderColor: 'var(--border-color)'
+                              })
+                        }}
                       >
                         <MessageSquare size={12} />
                         Main ({messages.length} msgs)
@@ -545,11 +696,20 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                         <button
                           key={branch.id}
                           onClick={() => setActiveBranchId(branch.id)}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono transition-all ${
-                            activeBranchId === branch.id
-                              ? 'bg-cyan-400/10 text-cyan-400 border border-cyan-400/20'
-                              : 'bg-slate-900/30 text-slate-500 border border-slate-800/30 hover:text-slate-300'
-                          }`}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono transition-all border"
+                          style={{
+                            ...(activeBranchId === branch.id
+                              ? {
+                                  backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                                  color: 'var(--accent)',
+                                  borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)'
+                                }
+                              : {
+                                  backgroundColor: 'var(--bg-tertiary)',
+                                  color: 'var(--text-muted)',
+                                  borderColor: 'var(--border-color)'
+                                })
+                          }}
                         >
                           <GitBranch size={12} />
                           {branch.label} ({branch.messages.length} msgs)
@@ -559,7 +719,20 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
 
                     <button
                       onClick={() => handleBranch()}
-                      className="w-full px-3 py-2 text-xs font-mono bg-slate-900/30 text-slate-500 border border-slate-800/30 rounded-md hover:text-cyan-400 hover:border-cyan-400/20 transition-all flex items-center justify-center gap-1"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-md border transition-all flex items-center justify-center gap-1"
+                      style={{
+                        backgroundColor: 'var(--bg-tertiary)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-muted)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'var(--accent)';
+                        e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent) 20%, transparent)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--text-muted)';
+                        e.currentTarget.style.borderColor = 'var(--border-color)';
+                      }}
                     >
                       <GitBranch size={12} />
                       Branch from current
@@ -585,12 +758,16 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, type: 'spring', mass: 0.5, damping: 18 }}
-            className="rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md flex flex-col"
+            className="rounded-lg border flex flex-col"
+            style={{
+              borderColor: 'var(--border-color)',
+              backgroundColor: 'var(--bg-secondary)'
+            }}
           >
-            <div className="px-5 py-3 border-b border-slate-800/30 flex items-center justify-between">
+            <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderBottomColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-2">
-                <Terminal size={14} className="text-cyan-400" />
-                <h3 className="text-sm font-medium text-slate-300">Live Sandbox Testbed</h3>
+                <Terminal size={14} style={{ color: 'var(--accent)' }} />
+                <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Live Sandbox Testbed</h3>
               </div>
               {displayMessages.length > 0 && (
                 <OutputFormatter content={displayMessages[displayMessages.length - 1]?.content || ''} />
@@ -600,7 +777,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
             {/* Chat Timeline */}
             <div className="flex-1 p-5 space-y-4 min-h-[400px] max-h-[500px] overflow-y-auto">
               {displayMessages.length === 0 && (
-                <div className="flex items-center justify-center h-full text-slate-600 text-sm font-mono">
+                <div className="flex items-center justify-center h-full text-sm font-mono" style={{ color: 'var(--text-muted)' }}>
                   Awaiting input...
                 </div>
               )}
@@ -615,13 +792,26 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-cyan-400/10 border border-cyan-400/20 text-slate-300'
+                      className="max-w-[80%] rounded-lg px-4 py-2.5 text-sm border"
+                      style={{
+                        ...(msg.role === 'user'
+                          ? {
+                              backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                              borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+                              color: 'var(--text-primary)'
+                            }
                           : msg.isTyping
-                          ? 'bg-slate-800/30 text-slate-500 font-mono'
-                          : 'bg-slate-800/30 border border-slate-800/30 text-slate-400'
-                      }`}
+                          ? {
+                              backgroundColor: 'var(--bg-tertiary)',
+                              border: 'none',
+                              color: 'var(--text-muted)'
+                            }
+                          : {
+                              backgroundColor: 'var(--bg-tertiary)',
+                              borderColor: 'var(--border-color)',
+                              color: 'var(--text-secondary)'
+                            })
+                      }}
                     >
                       {msg.isTyping ? (
                         <span className="flex items-center gap-2">
@@ -632,7 +822,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                         <div>
                           <span className="whitespace-pre-wrap font-mono text-xs">{msg.content}</span>
                           {msg.tokensUsed && (
-                            <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-800/20 text-[9px] font-mono text-slate-600">
+                            <div className="flex items-center gap-3 mt-2 pt-2 border-t text-[9px] font-mono" style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
                               {msg.tokensUsed && <span>{msg.tokensUsed} tokens</span>}
                               {msg.latencyMs && <span>{msg.latencyMs}ms</span>}
                               {msg.model && <span>{msg.model}</span>}
@@ -648,7 +838,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
             </div>
 
             {/* Input */}
-            <div className="px-5 py-4 border-t border-slate-800/30">
+            <div className="px-5 py-4 border-t" style={{ borderTopColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-3">
                 <input
                   type="text"
@@ -656,12 +846,29 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRun()}
                   placeholder="Enter command..."
-                  className="flex-1 bg-transparent border-0 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none font-mono"
+                  className="flex-1 bg-transparent border-0 text-sm focus:outline-none font-mono"
+                  style={{
+                    color: 'var(--text-primary)',
+                    placeholderColor: 'var(--text-muted)'
+                  }}
                 />
                 <button
                   onClick={handleRun}
                   disabled={isRunning || !input.trim()}
-                  className="p-2 rounded-md bg-cyan-400/10 border border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="p-2 rounded-md border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+                    color: 'var(--accent)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isRunning && input.trim()) {
+                      e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--accent) 20%, transparent)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--accent) 10%, transparent)';
+                  }}
                 >
                   {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
                 </button>

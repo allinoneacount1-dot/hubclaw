@@ -33,26 +33,23 @@ export function applyTheme(theme: ThemeMode) {
 }
 
 export default function ThemeToggle({ theme, onThemeChange, className }: ThemeToggleProps) {
-  const [currentTheme, setCurrentTheme] = useState<ThemeMode>(theme);
-
   const handleToggle = () => {
     const modes: ThemeMode[] = ['dark', 'light', 'auto'];
-    const nextIndex = (modes.indexOf(currentTheme) + 1) % modes.length;
+    const nextIndex = (modes.indexOf(theme) + 1) % modes.length;
     const nextTheme = modes[nextIndex];
-    setCurrentTheme(nextTheme);
     onThemeChange(nextTheme);
     applyTheme(nextTheme);
   };
 
-  const cfg = themeConfig[currentTheme];
+  const cfg = themeConfig[theme];
   const Icon = cfg.icon;
 
   return (
     <button
       onClick={handleToggle}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-all ${
-        currentTheme === 'light'
-          ? 'bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200'
+        theme === 'light'
+          ? 'bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200 hover:text-cyan-600'
           : 'bg-slate-800/30 border-slate-800/30 text-slate-500 hover:text-cyan-400 hover:border-cyan-400/20'
       } ${className || ''}`}
       title={`Theme: ${cfg.label}`}

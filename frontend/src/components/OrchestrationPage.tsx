@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import type { Agent, OrchestrationPipeline } from '../services/api';
 import OrchestrationView from './OrchestrationView';
 import { ArrowLeft, GitBranch } from 'lucide-react';
+import Breadcrumb from './Breadcrumb';
 
 interface OrchestrationPageProps {
   agents: Agent[];
@@ -28,9 +29,9 @@ export default function OrchestrationPage({
     >
       <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors">
+          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors" aria-label="Back to Dashboard">
             <ArrowLeft size={16} />
-            <span className="font-mono text-xs">Back to Dashboard</span>
+            <span className="font-mono text-xs">Back</span>
           </button>
           <div className="flex items-center gap-2">
             <GitBranch size={16} className="text-cyan-400" />
@@ -41,15 +42,18 @@ export default function OrchestrationPage({
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <OrchestrationView
-          agents={agents}
-          pipelines={pipelines}
-          onCreatePipeline={onCreatePipeline}
-          onDeletePipeline={onDeletePipeline}
-          onRunPipeline={onRunPipeline}
-          onAddStep={onAddStep}
-          onRemoveStep={onRemoveStep}
-        />
+        <Breadcrumb items={[{ label: 'Dashboard', onClick: onBack }, { label: 'Orchestration' }]} />
+        <div className="mt-6">
+          <OrchestrationView
+            agents={agents}
+            pipelines={pipelines}
+            onCreatePipeline={onCreatePipeline}
+            onDeletePipeline={onDeletePipeline}
+            onRunPipeline={onRunPipeline}
+            onAddStep={onAddStep}
+            onRemoveStep={onRemoveStep}
+          />
+        </div>
       </div>
     </motion.div>
   );

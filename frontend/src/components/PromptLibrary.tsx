@@ -5,11 +5,7 @@ import {
   ArrowLeft, Search, Plus, Trash2, Copy, Tag,
   BookOpen, Check, FolderOpen, Star
 } from 'lucide-react';
-
-interface PromptLibraryProps {
-  onBack: () => void;
-  onSelect?: (content: string) => void;
-}
+import Breadcrumb from './Breadcrumb';
 
 const CATEGORIES = ['All', 'Analysis', 'Development', 'Content', 'Research', 'Operations', 'Security', 'Custom'];
 
@@ -20,7 +16,7 @@ const BUILT_IN_PROMPTS: PromptTemplate[] = [
   { id: 'p4', name: 'Research Assistant', category: 'Research', content: 'You are a research assistant specializing in deep, multi-source synthesis. Gather information from diverse sources, cross-reference facts, identify knowledge gaps, and present findings with proper citations and confidence levels.', tags: ['research', 'synthesis', 'citations'], isBuiltIn: true },
   { id: 'p5', name: 'DevOps Sentinel', category: 'Operations', content: 'You are a DevOps engineer focused on CI/CD pipeline monitoring and incident response. Monitor deployment health, detect anomalies, auto-rollback failed deploys, and maintain system reliability with minimal downtime.', tags: ['devops', 'cicd', 'monitoring'], isBuiltIn: true },
   { id: 'p6', name: 'Legal Parser', category: 'Analysis', content: 'You are a legal document analyst. Extract key clauses, identify risks and obligations, flag unusual terms, and summarize complex legal language into actionable insights. Always note when professional legal review is recommended.', tags: ['legal', 'contracts', 'risk'], isBuiltIn: true },
-  { id: 'p7', name: 'Crypto Scout', category: 'Analysis', content: 'You are a cryptocurrency and DeFi analyst. Track on-chain data, whale movements, yield farming opportunities, and market sentiment. Provide risk assessments and highlight emerging trends in the Web3 ecosystem.', tags: ['crypto', 'defi', 'web3'], isBuiltIn: true },
+  { id: 'p7', name: 'Crypto Market Scout', category: 'Analysis', content: 'You are a cryptocurrency and DeFi analyst. Track on-chain data, whale movements, yield farming opportunities, and market sentiment. Provide risk assessments and highlight emerging trends in the Web3 ecosystem.', tags: ['crypto', 'defi', 'web3'], isBuiltIn: true },
   { id: 'p8', name: 'Email Triage', category: 'Operations', content: 'You are an email management assistant. Auto-categorize inbound emails by urgency and topic, draft contextually appropriate responses, and prioritize action items. Maintain professional tone and flag sensitive communications.', tags: ['email', 'triage', 'automation'], isBuiltIn: true },
   { id: 'p9', name: 'SQL Generator', category: 'Development', content: 'You are a SQL expert. Convert natural language queries into optimized SQL with proper indexing hints, JOIN strategies, and query plans. Support PostgreSQL, MySQL, and BigQuery dialects.', tags: ['sql', 'database', 'query'], isBuiltIn: true },
   { id: 'p10', name: 'API Tester', category: 'Development', content: 'You are a QA engineer specializing in API testing. Generate comprehensive test suites covering happy paths, edge cases, error handling, and security scenarios. Include load testing and contract validation.', tags: ['api', 'testing', 'qa'], isBuiltIn: true },
@@ -40,6 +36,11 @@ const BUILT_IN_PROMPTS: PromptTemplate[] = [
   { id: 'p24', name: 'SRE Analyst', category: 'Operations', content: 'You are a site reliability engineer. Monitor application logs for anomalies, predict failures before they occur, and automate incident response. Maintain SLOs and error budgets.', tags: ['sre', 'reliability', 'monitoring'], isBuiltIn: true },
   { id: 'p25', name: 'Content Planner', category: 'Content', content: 'You are a content strategist. Plan editorial calendars based on audience analytics, seasonal trends, and engagement data. Optimize posting schedules for maximum reach.', tags: ['content', 'planning', 'calendar'], isBuiltIn: true },
 ];
+
+interface PromptLibraryProps {
+  onBack: () => void;
+  onSelect?: (content: string) => void;
+}
 
 export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) {
   const [prompts, setPrompts] = useState<PromptTemplate[]>(BUILT_IN_PROMPTS);
@@ -92,7 +93,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
     >
       <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors">
+          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors" aria-label="Back to Dashboard">
             <ArrowLeft size={16} />
             <span className="font-mono text-xs">Back</span>
           </button>
@@ -105,7 +106,8 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex items-center gap-4 mb-6">
+        <Breadcrumb items={[{ label: 'Dashboard', onClick: onBack }, { label: 'Prompt Library' }]} />
+        <div className="flex items-center gap-4 mt-6 mb-6">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
@@ -114,11 +116,13 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search prompts by name, content, or tags..."
               className="w-full pl-9 pr-4 py-2.5 bg-slate-900/30 border border-slate-800/30 rounded-lg text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/30"
+              aria-label="Search prompts"
             />
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
             className="px-4 py-2.5 text-sm text-cyan-400 border border-cyan-400/30 rounded-lg hover:bg-cyan-400/10 transition-all flex items-center gap-1.5 shrink-0"
+            aria-label="Create new prompt"
           >
             <Plus size={14} />
             New Prompt
@@ -208,6 +212,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
                     onClick={() => handleCopy(prompt.content, prompt.id)}
                     className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-cyan-400 transition-all"
                     title="Copy"
+                    aria-label="Copy prompt"
                   >
                     {copied === prompt.id ? <Check size={12} /> : <Copy size={12} />}
                   </button>
@@ -216,6 +221,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
                       onClick={() => onSelect(prompt.content)}
                       className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-cyan-400 transition-all"
                       title="Use this prompt"
+                      aria-label="Use prompt"
                     >
                       <Plus size={12} />
                     </button>
@@ -225,6 +231,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
                       onClick={() => handleDelete(prompt.id)}
                       className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-red-400 transition-all"
                       title="Delete"
+                      aria-label="Delete prompt"
                     >
                       <Trash2 size={12} />
                     </button>
