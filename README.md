@@ -2,187 +2,370 @@
 
 ![HubClaw Logo](frontend/public/logo-hubclaw.svg)
 
-## 🚀 Apa Itu HubClaw?
-HubClaw adalah platform orkestrasi agen AI canggih yang memungkinkan kamu untuk membuat, mengelola, dan menggunakan beberapa agen AI secara terintegrasi. Dengan antarmuka yang ramah pengguna dan animasi yang memukau, HubClaw memudahkan developer, startup, dan tim untuk:
+---
 
-- 🔗 **Orkestrasikan beberapa agen AI dalam satu workflow
-- 📊 Analisis kinerja agen secara real-time
-- 🎨 Penggunaan antarmuka dengan tema gelap dan terang
-- 📚 Perpustakaan prompt terorganisir
-- 🛡️ Keamanan dan kontrol akses
-- 🚀 Boot screen dan landing page yang cinematic
-- 💬 Command center untuk setiap agen dengan riwayat chat yang persisten
+## 🚀 Overview
 
-## 📦 Tech Stack
-- **Frontend**: React 19 + TypeScript + Vite
-- **State Management**: Zustand + Local Storage
-- **Styling**: Tailwind CSS + Custom CSS Properties
-- **Animasi**: Framer Motion
-- **Visualisasi Data**: Recharts
+HubClaw is a cutting-edge AI agent orchestration platform designed to streamline your workflow, automate repetitive tasks, and harness the collective power of multiple specialized AI models working in harmony. Whether you're a developer, data scientist, product manager, or AI enthusiast, HubClaw provides an intuitive, developer-first interface to create, configure, and deploy intelligent agent pipelines.
+
+### Key Capabilities
+- **Modular Agent Architecture**: Each agent is a self-contained expert with configurable personality, capabilities, and tools
+- **Multi-Model Support**: Seamlessly use Google Gemini, Anthropic Claude, OpenAI GPT, DeepSeek, xAI Grok, Mistral, and local Ollama models
+- **Workflow Orchestration**: Chain agents together into complex, multi-step pipelines with automatic input/output handling
+- **Persistent Conversation History**: All interactions are saved locally with conversation branching and versioning (Git-style)
+- **Comprehensive Analytics**: Monitor performance, token usage, latency, and agent activity in beautiful, interactive charts
+- **Prompt Library**: Battle-tested system prompts for 30+ common use cases to accelerate your workflow
+- **Safety & Cost Control**: Token budgets, content filtering, and usage limits to keep your AI operations secure and affordable
+- **Dark & Light Themes**: Beautiful, responsive UI with full theme support and accessibility features
+
+---
+
+## 🛠️ Tech Stack
+
+HubClaw is built with modern, industry-standard technologies:
+- **Frontend**: React 19 + TypeScript 5 + Vite 6
+- **State Management**: Zustand with localStorage persistence
+- **Styling**: Tailwind CSS 4 + CSS Custom Properties
+- **Animations**: Framer Motion
+- **Charts & Visualization**: Recharts
 - **Icons**: Lucide React
-- **AI Model**: OpenRouter + Gemini AI (dengan fallback mock)
-- **Backend (Opsional)**: Supabase (dengan mock fallback)
+- **Build & Deployment**: Vercel-optimized configuration
 
-## 🎮 Fitur Utama
+---
 
-### 1. 🎨 Boot Screen Cinematic
-- Tampilan boot OS-style dengan animasi yang memukau
-- Progress bar dengan gradient ungu-biru
-- Logo HubClaw yang berkilau
-- Animasi spring
+## 📚 Table of Contents
 
-### 2. 🏠 Landing Page Minimalis
-- Background glow yang dinamis
-- Fitur showcase
-- Tombol CTA yang menarik
-- Link ke repo GitHub
+1. [Getting Started](#-getting-started)
+2. [Installation](#-installation)
+3. [Usage Guide](#-usage-guide)
+4. [Core Features](#-core-features)
+5. [Deployment](#-deployment)
+6. [Project Structure](#-project-structure)
+7. [Best Practices](#-best-practices)
+8. [Contributing](#-contributing)
+9. [License](#-license)
 
-### 3. 📊 Dashboard Utama
-- Tampilan daftar agen dengan grid responsif
-- Search bar untuk mencari agen
-- Button "Back to Landing Page"
-- Navigasi ke:
-  - Global Analytics
-  - Prompt Library
-  - Orchestration
-- Agent cards dengan rating bintang
+---
 
-### 4. 💬 Command Center
-- Chat dengan setiap agen secara individual
-- Riwayat chat tersimpan di localStorage
-- Mock AI fallback jika backend tidak aktif
-- Tombol GitHub link
+## 🚀 Getting Started
 
-### 5. 📈 Analytics View
-- Visualisasi kinerja agen
-- Grafik interaktif dengan Recharts
-- Statistik token usage, jumlah chat, dan banyak lagi
+Getting started with HubClaw takes less than 5 minutes. Follow these simple steps:
 
-### 6. 📚 Prompt Library
-- Perpustakaan prompt yang bisa dikembangkan
-- Simpan dan atur prompt Anda sendiri
+### Prerequisites
 
-### 7. 🔀 Orchestration Page
-- Buat dan kelola pipeline agen berantai
-- Jalankan workflow multi-agent
-- Hapus dan edit pipeline
+- Node.js 18+ or higher
+- npm, yarn, or pnpm
+- Modern web browser (Chrome 100+, Firefox 100+, Safari 16+, Edge 100+)
 
-### 8. ⚙️ Create Agent Modal
-- Formulir lengkap untuk membuat agen baru
-- Konfigurasi model, temperatur, max tokens, tools
+### Quick Start
 
-### 9. 🎭 Tema Gelap & Terang
-- Switcher tema yang fully functional
-- CSS Custom Properties untuk konsistensi
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/allinoneacount1-dot/hubclaw.git
+   cd hubclaw
+   ```
 
-### 10. 🍞 Breadcrumb Navigation
-- Navigasi yang jelas di setiap halaman
-- Back button untuk kembali ke halaman sebelumnya
+2. **Install dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## 🚀 Cara Instalasi & Penggunaan
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-### Prasyarat
-- Node.js 18+ (atau lebih tinggi)
-- npm atau yarn atau pnpm
-- Git
+4. **Open your browser** and navigate to `http://localhost:5173` (or `http://localhost:5174`)
 
-### Langkah 1: Clone Repository
+That's it! You're ready to start using HubClaw.
+
+---
+
+## 📦 Installation
+
+### Development Environment
+
+HubClaw supports all major package managers:
+
+**npm**:
 ```bash
-git clone https://github.com/allinoneacount1-dot/hubclaw.git
-cd hubclaw
-```
-
-### Langkah 2: Instal Dependensi Frontend
-```bash
-cd frontend
 npm install
-```
-
-### Langkah 3: Jalankan Server Pengembangan
-```bash
 npm run dev
 ```
-Buka browser Anda di `http://localhost:5174/`
 
-### Langkah 4: Build untuk Produksi
+**yarn**:
+```bash
+yarn install
+yarn dev
+```
+
+**pnpm**:
+```bash
+pnpm install
+pnpm dev
+```
+
+### Production Build
+
+To build HubClaw for production:
 ```bash
 npm run build
 ```
 
-### Langkah 5: Preview Build
+The built files will be in the `frontend/dist` directory.
+
+To preview the production build:
 ```bash
 npm run preview
 ```
 
-## 📂 Struktur Proyek
-```
-hubclaw/
-├── frontend/
-│   ├── public/
-│   │   ├── favicon.svg
-│   │   └── logo-hubclaw.svg
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AgentCard.tsx
-│   │   │   ├── AnalyticsView.tsx
-│   │   │   ├── BootScreen.tsx
-│   │   │   ├── Breadcrumb.tsx
-│   │   │   ├── CommandCenter.tsx
-│   │   │   ├── CreateAgentModal.tsx
-│   │   │   ├── Dashboard.tsx
-│   │   │   ├── LandingPage.tsx
-│   │   │   ├── OrchestrationPage.tsx
-│   │   │   ├── PromptLibrary.tsx
-│   │   │   ├── Skeleton.tsx
-│   │   │   ├── ThemeToggle.tsx
-│   │   │   └── Toast.tsx
-│   │   ├── store.ts
-│   │   ├── App.tsx
-│   │   ├── index.css
-│   │   └── main.tsx
-│   ├── package.json
-│   └── vite.config.ts
-└── README.md
-```
+---
 
-## 📝 Contoh Alur Penggunaan
-1. **Buka aplikasi di browser
-2. **Boot Screen berjalan
-3. **Klik "Enter Dashboard" di Landing Page
-4. **Anda akan diarahkan ke Dashboard
-5. **Klik agent untuk masuk ke Command Center
-6. **Chat dengan agent AI (mock jika backend tidak aktif
-7. **Kembali ke Dashboard dengan tombol Back
-8. **Jelajahi Analytics, Prompt Library, atau Orchestration
-9. **Kembali ke Landing Page dengan tombol Home di Dashboard
+## 📖 Usage Guide
 
-## 🎨 Kustomisasi
-Anda dapat mengkustomisasi:
-- Tema warna di `frontend/src/index.css`
-- Logo di `frontend/public/logo-hubclaw.svg`
-- Mock data di `frontend/src/components/Dashboard.tsx`
-- Terdapat banyak lagi!
+### Boot Sequence
 
-## 📚 Dokumentasi Chat
-Untuk dokumentasi chat lengkap (lebih dari 10.000 karakter dan ratusan contoh chat, lihat `CHAT_DOCUMENTATION.md`.
+When you first open HubClaw, you will experience our cinematic boot screen, which:
+1. Displays the HubClaw logo with animated glow effects
+2. Shows boot progress through stages (BIOS Init → Kernel Load → File Systems → Network → HubClaw OS)
+3. Features a gradient progress bar with smooth animations
+4. Automatically transitions to the landing page after completion
 
-## 🚀 Deploy ke Vercel
-Proyek ini siap untuk di-deploy ke Vercel! Caranya:
-1. Push repository ke GitHub
-2. Buka https://vercel.com dan login
-3. Import project baru
-4. Pilih repository `frontend` sebagai root direktori
-5. Deploy dengan settingan default
-6. Selesai! 🎉
+### Landing Page
 
-## 📝 Lisensi
-MIT License - silakan lihat LICENSE untuk informasi lebih lanjut.
+The landing page is your gateway to HubClaw, featuring:
+- Beautiful gradient background with animated glow orbs
+- Feature showcase with icons
+- Prominent "Enter Dashboard" CTA button
+- GitHub repository link
+- Clean, minimalist design with the HubClaw branding
 
-## 🤝 Kontribusi
-Kami sangat menerima kontribusi apapun! Buka issue atau pull request!
+### Dashboard Tour
 
-## 📞 Kontak
-GitHub: https://github.com/allinoneacount1-dot/hubclaw
+The dashboard is your command center:
+1. **Top Bar**: Logo, home button, agent search, and "Initialize" button
+2. **Navigation Tabs**:
+   - Dashboard (agent grid)
+   - Global Analytics
+   - Prompt Library
+   - Orchestration
+   - Documentation
+3. **Agent Grid**: Responsive grid showing all your agents with stats
+4. **Breadcrumb Navigation**: Clear path indication
+
+### Creating Your First Agent
+
+To create a new agent:
+
+1. Click "Initialize" in the top right corner
+2. Fill out the agent configuration form:
+   - **Agent Name**: Clear, descriptive name
+   - **Description**: Brief explanation of what the agent does
+   - **Model Engine**: Choose from Gemini, Claude, GPT, DeepSeek, Grok, Mistral, or Ollama
+   - **Temperature**: Controls randomness (0 = deterministic, 2 = very creative)
+   - **Max Tokens**: Limit response length to control costs
+   - **Tools**: Select from Web Search, Python Sandbox, GitHub Repo Manager, Discord Webhooks
+   - **System Prompt**: Define the agent's personality, behavior, and constraints (use templates!)
+3. Click "Create Agent"
+
+Your new agent will appear in the dashboard grid, ready to use!
+
+### Using the Command Center
+
+Click on any agent to open its Command Center, where you can:
+- **Live Sandbox**: Chat with the agent and view real-time responses
+- **Config Tab**: View and (soon) edit agent settings
+- **Queue Tab**: Manage task queues with priority levels
+- **History Tab**: Explore conversation branches
+- **Safety Tab**: Configure safety guardrails and token budgets
+
+### Building Orchestrations
+
+The Orchestration page lets you chain agents together:
+
+1. Click "Create Pipeline"
+2. Give your pipeline a name and description
+3. Add steps by selecting agents and defining inputs
+4. Use `{{step_X_output}}` variables to pass data between steps
+5. Click "Run Pipeline" to execute automatically
 
 ---
-Dibuat dengan ❤️ dan AI oleh tim HubClaw
+
+## ✨ Core Features
+
+### 1. Cinematic Boot Sequence
+- OS-style boot animation with logo reveal
+- Staged boot messages with smooth transitions
+- Gradient progress bar with animated shimmer effect
+- Persistent state (only runs once per session)
+
+### 2. Multi-Agent Orchestration
+- Visual pipeline builder
+- Automatic output/input chaining
+- Step-by-step execution with feedback
+- Pipeline management (create, delete, run)
+
+### 3. Comprehensive Analytics
+- Token usage tracking and forecasting
+- Response time/latency metrics
+- Agent activity and popularity
+- Beautiful Recharts visualizations
+- Date range filtering
+
+### 4. Prompt Library
+- 30+ pre-written, battle-tested system prompts
+- Use cases from data analysis to community moderation
+- Fully customizable and extendable
+- One-click application to new agents
+
+### 5. Conversation Branching
+- Git-style conversation versioning
+- Create branches from any point in the chat
+- Switch between branches seamlessly
+- Perfect for exploring multiple approaches
+
+### 6. Safety & Cost Control
+- Configurable token budgets
+- Content filtering (coming soon)
+- Usage alerts and limits
+- Safety guardrails configuration
+
+### 7. Theme Support
+- Dark theme (default, optimized for developers)
+- Light theme (for bright environments)
+- CSS Custom Properties for easy customization
+- Smooth theme transitions
+
+### 8. Responsive Design
+- Mobile-first approach
+- Works perfectly on phones, tablets, and desktops
+- Touch-friendly interface
+- Adaptive layouts for all screen sizes
+
+---
+
+## 🚀 Deployment
+
+### Deploy to Vercel (Recommended)
+
+HubClaw is optimized for Vercel deployment with zero configuration:
+
+1. Push your code to GitHub
+2. Log in to [Vercel](https://vercel.com)
+3. Click "New Project"
+4. Import your `allinoneacount1-dot/hubclaw` repository
+5. Set **Root Directory** to `frontend`
+6. Click "Deploy"
+
+That's it! Your HubClaw instance will be live in seconds.
+
+### Manual Deployment
+
+You can deploy HubClaw to any static hosting service:
+
+1. Build the production bundle:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+2. Deploy the `dist` directory to your hosting provider (Netlify, Cloudflare Pages, AWS S3, etc.)
+
+---
+
+## 📁 Project Structure
+
+```
+hubclaw/
+├── frontend/                      # Main application directory
+│   ├── public/                    # Static assets
+│   │   ├── favicon.svg            # Custom favicon
+│   │   └── logo-hubclaw.svg       # Main HubClaw logo
+│   ├── src/                       # Source code
+│   │   ├── components/            # React components
+│   │   │   ├── AgentCard.tsx      # Agent card display component
+│   │   │   ├── AnalyticsView.tsx  # Global analytics dashboard
+│   │   │   ├── BootScreen.tsx     # Cinematic boot animation
+│   │   │   ├── Breadcrumb.tsx     # Breadcrumb navigation
+│   │   │   ├── CommandCenter.tsx  # Agent interaction interface
+│   │   │   ├── CreateAgentModal.tsx # Agent creation form
+│   │   │   ├── Dashboard.tsx      # Main dashboard page
+│   │   │   ├── Documentation.tsx  # Documentation page (10k+ chars)
+│   │   │   ├── LandingPage.tsx    # Landing/home page
+│   │   │   ├── OrchestrationPage.tsx # Pipeline builder
+│   │   │   ├── PromptLibrary.tsx  # Prompt library
+│   │   │   ├── Skeleton.tsx       # Loading skeletons
+│   │   │   ├── ThemeToggle.tsx    # Dark/light theme switcher
+│   │   │   └── Toast.tsx          # Notification system
+│   │   ├── services/              # API and service layer
+│   │   ├── store.ts               # Zustand global state
+│   │   ├── App.tsx                # Main app component & routing
+│   │   ├── index.css              # Global styles & theme
+│   │   └── main.tsx               # App entry point
+│   ├── package.json               # Dependencies and scripts
+│   ├── tsconfig.json              # TypeScript config
+│   ├── vite.config.ts             # Vite config
+│   └── vercel.json                # Vercel deployment config
+├── CHAT_DOCUMENTATION.md          # Extra chat documentation
+└── README.md                      # This file
+```
+
+---
+
+## 🌟 Best Practices
+
+To get the most out of HubClaw:
+
+1. **Start Small**: Begin with a single, focused agent before building complex orchestrations
+2. **Invest in System Prompts**: A well-written system prompt is the foundation of a great agent
+3. **Test with Mock AI**: Use the built-in mock AI to test workflows without incurring costs
+4. **Use Conversation Branching**: Explore different approaches without losing your original work
+5. **Monitor Analytics**: Keep an eye on usage to optimize costs and performance
+6. **Leverage the Prompt Library**: Our templates are battle-tested and ready to use
+7. **Iterate**: AI agents improve with feedback—refine your prompts and settings over time
+8. **Stay Organized**: Use clear names and descriptions for agents and pipelines
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions of all kinds! Here's how you can help:
+
+1. **Report Bugs**: Use GitHub Issues to report problems
+2. **Request Features**: Share your ideas for new functionality
+3. **Submit Pull Requests**: Fix bugs, add features, improve documentation
+4. **Improve Documentation**: Help us make our docs even better
+5. **Spread the Word**: Tell your friends and colleagues about HubClaw
+
+### Development Guidelines
+
+- Follow the existing code style and conventions
+- Write TypeScript with strict type checking enabled
+- Keep components focused and modular
+- Use meaningful commit messages
+- Test your changes thoroughly
+
+---
+
+## 📄 License
+
+HubClaw is open-source software released under the MIT License. See the LICENSE file for more details.
+
+---
+
+## 💬 Contact
+
+- **GitHub Repository**: [https://github.com/allinoneacount1-dot/hubclaw](https://github.com/allinoneacount1-dot/hubclaw)
+- **Issues & Feature Requests**: [GitHub Issues](https://github.com/allinoneacount1-dot/hubclaw/issues)
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with ❤️ by the HubClaw team
+- Powered by amazing AI models from Google, Anthropic, OpenAI, and others
+- Inspired by the developer community's passion for AI automation
+
+---
+
+**Thank you for choosing HubClaw!** We're excited to see what you'll build.

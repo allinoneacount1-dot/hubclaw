@@ -48,9 +48,10 @@ interface DashboardProps {
   onPromptsClick: () => void;
   onOrchestrationClick: () => void;
   onGoToLanding: () => void;
+  onDocumentationClick: () => void;
 }
 
-export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsClick, onOrchestrationClick, onGoToLanding }: DashboardProps) {
+export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsClick, onOrchestrationClick, onGoToLanding, onDocumentationClick }: DashboardProps) {
   const { agents, setAgents, addAgent, addToast } = useAppStore();
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -216,6 +217,13 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
             style={{ color: 'var(--text-muted)' }}
           >
             Orchestration
+          </button>
+          <button
+            onClick={onDocumentationClick}
+            className="text-sm transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Documentation
           </button>
         </div>
       </div>

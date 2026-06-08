@@ -6,13 +6,14 @@ import CommandCenter from './components/CommandCenter';
 import AnalyticsView from './components/AnalyticsView';
 import PromptLibrary from './components/PromptLibrary';
 import OrchestrationPage from './components/OrchestrationPage';
+import Documentation from './components/Documentation';
 import ThemeToggle, { applyTheme } from './components/ThemeToggle';
 import Toast from './components/Toast';
 import BootScreen from './components/BootScreen';
 import LandingPage from './components/LandingPage';
 import { useAppStore } from './store';
 
-type View = 'dashboard' | 'command' | 'analytics' | 'prompts' | 'orchestration';
+type View = 'dashboard' | 'command' | 'analytics' | 'prompts' | 'orchestration' | 'documentation';
 
 export default function App() {
   const [view, setView] = useState<View>('dashboard');
@@ -84,6 +85,7 @@ export default function App() {
                   onPromptsClick={() => setView('prompts')}
                   onOrchestrationClick={() => setView('orchestration')}
                   onGoToLanding={goToLanding}
+                  onDocumentationClick={() => setView('documentation')}
                 />
               )}
               {view === 'command' && selectedAgent && (
@@ -115,6 +117,12 @@ export default function App() {
                   onRunPipeline={runPipeline}
                   onAddStep={handleAddStep}
                   onRemoveStep={removeStep}
+                  onBack={handleBack}
+                />
+              )}
+              {view === 'documentation' && (
+                <Documentation
+                  key="documentation"
                   onBack={handleBack}
                 />
               )}
