@@ -14,6 +14,10 @@ export const config = {
   openRouterApiKey: process.env.OPENROUTER_API_KEY || '',
   openRouterBaseUrl: 'https://openrouter.ai/api/v1',
 
+  // Helius (Solana)
+  heliusApiKey: process.env.HELIUS_API_KEY || '',
+  heliusBaseUrl: 'https://mainnet.helius-rpc.com',
+
   // Free tier models (prioritized)
   freeModels: [
     'nvidia/nemotron-4-340b-instruct:free',
