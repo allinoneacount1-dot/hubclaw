@@ -1,7 +1,13 @@
 import { Response } from 'express';
 import supabase from '../config/supabaseClient.js';
 import { runOpenRouter } from '../services/openrouterService.js';
-import { searchWeb, sendDiscordWebhook } from '../services/toolsService.js';
+import {
+  searchWeb,
+  sendDiscordWebhook,
+  fetchGitHubRepo,
+  fetchGitHubIssues,
+  runPythonCode,
+} from '../services/toolsService.js';
 import { config } from '../config/environment.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import type { RunRequest, RunResponse } from '../types/index.js';
@@ -23,17 +29,20 @@ export async function runAgent(
       temperature = 0.7,
       maxTokens = 2048,
       toolsConfig = {},
-    }: RunRequest = req.body;
+      githubOwner,
+      githubRepo,
+      githubToken,
+      pythonCode,
+      discordWebhookUrl,
+    }: RunRequest & any = req.body;
 
     if (!userMessage) {
       res.status(400).json({ error: 'userMessage is required' });
       return;
     }
 
-    // Reset daily tokens if needed
     await supabase.rpc('reset_daily_tokens');
 
-    // Get OpenRouter API key: user profile → env fallback
     let openRouterApiKey = config.openRouterApiKey;
 
     const { data: profile } = await supabase
@@ -42,7 +51,6 @@ export async function runAgent(
       .eq('id', userId)
       .single();
 
-    // Check token budget
     if (profile) {
       const { daily_token_limit, daily_tokens_used } = profile;
       if (daily_tokens_used && daily_token_limit && daily_tokens_used >= daily_token_limit) {
@@ -56,7 +64,6 @@ export async function runAgent(
       openRouterApiKey = userApiKey;
     }
 
-    // If agentId provided, fetch agent config
     let agentConfig: Record<string, unknown> = {};
     if (agentId) {
       const { data: agent } = await supabase
@@ -71,7 +78,6 @@ export async function runAgent(
 
     let additionalContext = '';
 
-    // Execute tools if enabled
     if (toolsConfig['Web Search'] || (agentConfig.tools_config && agentConfig.tools_config['Web Search'])) {
       const searchResults = await searchWeb(userMessage);
       if (searchResults.length > 0) {
@@ -82,13 +88,42 @@ export async function runAgent(
       }
     }
 
+    if (toolsConfig['GitHub API'] || (agentConfig.tools_config && agentConfig.tools_config['GitHub API'])) {
+      if (githubOwner && githubRepo) {
+        const repoData = await fetchGitHubRepo(githubOwner, githubRepo, githubToken);
+        const issuesData = await fetchGitHubIssues(githubOwner, githubRepo, githubToken);
+        if (repoData) {
+          additionalContext += `\n\nGitHub Repo:\n${JSON.stringify(repoData, null, 2)}\n`;
+        }
+        if (issuesData && issuesData.length > 0) {
+          additionalContext += `\nGitHub Issues (latest ${issuesData.length}):\n`;
+          issuesData.slice(0, 5).forEach((issue: any) => {
+            additionalContext += `- ${issue.title} (#${issue.number})\n`;
+          });
+        }
+      }
+    }
+
+    if (toolsConfig['Python Sandbox'] || (agentConfig.tools_config && agentConfig.tools_config['Python Sandbox'])) {
+      if (pythonCode) {
+        const pythonResult = await runPythonCode(pythonCode);
+        additionalContext += `\n\nPython Execution Result:\nStdout: ${pythonResult.stdout}\nStderr: ${pythonResult.stderr}\nExit Code: ${pythonResult.exitCode}\n`;
+      }
+    }
+
+    if (toolsConfig['Discord Webhook'] || (agentConfig.tools_config && agentConfig.tools_config['Discord Webhook'])) {
+      if (discordWebhookUrl && userMessage) {
+        await sendDiscordWebhook(discordWebhookUrl, userMessage);
+        additionalContext += `\n\nDiscord message sent successfully.\n`;
+      }
+    }
+
     const finalSystemPrompt = systemPrompt || (agentConfig.system_prompt as string) || '';
     const finalModel = modelEngine || (agentConfig.model_engine as string) || config.defaultFreeModel;
     const finalTemp = temperature ?? (agentConfig.temperature as number) ?? 0.7;
     const finalMaxTokens = maxTokens ?? (agentConfig.max_tokens as number) ?? 2048;
     const finalPrompt = `${userMessage}${additionalContext}`;
 
-    // Execute via OpenRouter
     const result = await runOpenRouter({
       apiKey: openRouterApiKey || '',
       prompt: finalPrompt,
@@ -100,7 +135,6 @@ export async function runAgent(
 
     const latencyMs = Date.now() - startTime;
 
-    // Update token usage (fire and forget)
     try {
       await supabase
         .from('profiles')
@@ -110,7 +144,6 @@ export async function runAgent(
         .eq('id', userId);
     } catch { /* ignore */ }
 
-    // Log telemetry (fire and forget)
     try {
       await supabase
         .from('telemetry_logs')
@@ -126,7 +159,7 @@ export async function runAgent(
             .join(', ') || null,
           message: `[SUCCESS] ${result.model} — ${latencyMs}ms`,
         });
-    } catch { /* telemetry failed, ignore */ }
+    } catch { /* ignore */ }
 
     const response: RunResponse = {
       response: result.text,
@@ -139,7 +172,6 @@ export async function runAgent(
   } catch (err: any) {
     const latencyMs = Date.now() - startTime;
 
-    // Log error telemetry (fire and forget)
     try {
       await supabase
         .from('telemetry_logs')
@@ -151,7 +183,7 @@ export async function runAgent(
           status: 'error',
           message: `[ERROR] ${err.message}`,
         });
-    } catch { /* telemetry failed, ignore */ }
+    } catch { /* ignore */ }
 
     res.status(500).json({
       error: err.message || 'Internal server error',
@@ -161,7 +193,58 @@ export async function runAgent(
   }
 }
 
-// GET /api/models — list available OpenRouter free models
+export async function executePython(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      res.status(400).json({ error: 'code is required' });
+      return;
+    }
+    const result = await runPythonCode(code);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function fetchGitHub(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { owner, repo, token } = req.body;
+    if (!owner || !repo) {
+      res.status(400).json({ error: 'owner and repo are required' });
+      return;
+    }
+    const repoData = await fetchGitHubRepo(owner, repo, token);
+    const issues = await fetchGitHubIssues(owner, repo, token);
+    res.json({ repo: repoData, issues });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function sendDiscord(
+  req: AuthRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { webhookUrl, content } = req.body;
+    if (!webhookUrl || !content) {
+      res.status(400).json({ error: 'webhookUrl and content are required' });
+      return;
+    }
+    const result = await sendDiscordWebhook(webhookUrl, content);
+    res.json({ success: result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 export async function getModels(
   _req: AuthRequest,
   res: Response

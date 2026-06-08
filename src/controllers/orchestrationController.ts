@@ -2,6 +2,8 @@ import { Response } from 'express';
 import supabase from '../config/supabaseClient.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import type { OrchestrationPipeline, PipelineStep } from '../types/index.js';
+import { runOpenRouter } from '../services/openrouterService.js';
+import config from '../config/environment.js';
 
 // GET /api/orchestration
 export async function getPipelines(req: AuthRequest, res: Response) {
@@ -19,7 +21,6 @@ export async function getPipelines(req: AuthRequest, res: Response) {
       return;
     }
 
-    // Get steps for each pipeline
     const pipelineIds = (pipelines || []).map(p => p.id);
     let steps: PipelineStep[] = [];
     if (pipelineIds.length > 0) {
@@ -33,7 +34,6 @@ export async function getPipelines(req: AuthRequest, res: Response) {
       }
     }
 
-    // Combine pipelines with steps
     const pipelinesWithSteps = (pipelines || []).map(pipeline => ({
       ...pipeline,
       steps: steps.filter(step => step.pipeline_id === pipeline.id),
@@ -85,7 +85,6 @@ export async function addStep(req: AuthRequest, res: Response) {
       return;
     }
 
-    // Verify pipeline belongs to user
     const { data: pipeline, error: pipelineError } = await supabase
       .from('orchestration_pipelines')
       .select('*')
@@ -98,7 +97,6 @@ export async function addStep(req: AuthRequest, res: Response) {
       return;
     }
 
-    // Get current max step order
     const { data: existingSteps, error: stepsError } = await supabase
       .from('pipeline_steps')
       .select('step_order')
@@ -139,7 +137,6 @@ export async function removeStep(req: AuthRequest, res: Response) {
     const userId = req.userId;
     const { pipelineId, stepId } = req.params;
 
-    // Verify pipeline belongs to user
     const { data: pipeline, error: pipelineError } = await supabase
       .from('orchestration_pipelines')
       .select('*')
@@ -192,13 +189,24 @@ export async function deletePipeline(req: AuthRequest, res: Response) {
   }
 }
 
+// Helper to interpolate step outputs in input
+function interpolateStepInputs(input: string, steps: any[]) {
+  let result = input;
+  steps.forEach(step => {
+    const placeholder = new RegExp(`\\{\\{step_${step.step_order}_output\\}\\}`, 'g');
+    if (step.output) {
+      result = result.replace(placeholder, step.output);
+    }
+  });
+  return result;
+}
+
 // POST /api/orchestration/:id/run
 export async function runPipeline(req: AuthRequest, res: Response) {
   try {
     const userId = req.userId;
     const { id: pipelineId } = req.params;
 
-    // Verify pipeline belongs to user
     const { data: pipeline, error: pipelineError } = await supabase
       .from('orchestration_pipelines')
       .select('*')
@@ -211,19 +219,76 @@ export async function runPipeline(req: AuthRequest, res: Response) {
       return;
     }
 
-    // Update pipeline status to running
     await supabase
       .from('orchestration_pipelines')
       .update({ status: 'running', updated_at: new Date().toISOString() })
       .eq('id', pipelineId);
 
-    // Reset all steps to pending
-    await supabase
+    const { data: steps, error: stepsError } = await supabase
       .from('pipeline_steps')
-      .update({ status: 'pending', output: null, updated_at: new Date().toISOString() })
-      .eq('pipeline_id', pipelineId);
+      .select('*')
+      .eq('pipeline_id', pipelineId)
+      .order('step_order', { ascending: true });
+
+    if (stepsError || !steps || steps.length === 0) {
+      await supabase
+        .from('orchestration_pipelines')
+        .update({ status: 'idle', updated_at: new Date().toISOString() })
+        .eq('id', pipelineId);
+      res.status(400).json({ error: 'Pipeline has no steps' });
+      return;
+    }
+
+    await Promise.all(steps.map(step =>
+      supabase.from('pipeline_steps').update({ status: 'pending', output: null, updated_at: new Date().toISOString() }).eq('id', step.id)
+    ));
 
     res.json({ message: 'Pipeline started' });
+
+    (async () => {
+      const executedSteps: any[] = [];
+      let pipelineFailed = false;
+
+      for (const step of steps) {
+        if (pipelineFailed) break;
+
+        try {
+          await supabase.from('pipeline_steps').update({ status: 'running', updated_at: new Date().toISOString() }).eq('id', step.id);
+
+          const { data: agent } = await supabase.from('agents').select('*').eq('id', step.agent_id).single();
+
+          const processedInput = interpolateStepInputs(step.input, executedSteps);
+
+          let openRouterApiKey = config.openRouterApiKey;
+          const { data: profile } = await supabase.from('profiles').select('openrouter_api_key, encrypted_gemini_api_key').eq('id', userId).single();
+          if (profile?.openrouter_api_key) openRouterApiKey = profile.openrouter_api_key;
+          else if (profile?.encrypted_gemini_api_key) openRouterApiKey = profile.encrypted_gemini_api_key;
+
+          const result = await runOpenRouter({
+            apiKey: openRouterApiKey,
+            prompt: processedInput,
+            systemPrompt: agent?.system_prompt || '',
+            model: agent?.model_engine || config.defaultFreeModel,
+            temperature: agent?.temperature || 0.7,
+            maxTokens: agent?.max_tokens || 2048,
+          });
+
+          const stepWithOutput = { ...step, output: result.text };
+          executedSteps.push(stepWithOutput);
+
+          await supabase.from('pipeline_steps').update({ status: 'completed', output: result.text, updated_at: new Date().toISOString() }).eq('id', step.id);
+        } catch (err) {
+          pipelineFailed = true;
+          await supabase.from('pipeline_steps').update({ status: 'failed', updated_at: new Date().toISOString() }).eq('id', step.id);
+          console.error('Step execution failed:', err);
+        }
+      }
+
+      await supabase
+        .from('orchestration_pipelines')
+        .update({ status: pipelineFailed ? 'failed' : 'completed', updated_at: new Date().toISOString() })
+        .eq('id', pipelineId);
+    })();
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -243,4 +243,23 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // Orchestration
+  getPipelines: () => fetchJSON<{ pipelines: OrchestrationPipeline[] }>('/api/orchestration'),
+  createPipeline: (name: string) =>
+    fetchJSON<{ pipeline: OrchestrationPipeline }>('/api/orchestration', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  deletePipeline: (id: string) =>
+    fetchJSON(`/api/orchestration/${id}`, { method: 'DELETE' }),
+  runPipeline: (id: string) =>
+    fetchJSON(`/api/orchestration/${id}/run`, { method: 'POST' }),
+  addStep: (pipelineId: string, data: { agentId: string; agentName: string; input: string }) =>
+    fetchJSON<{ step: PipelineStep }>(`/api/orchestration/${pipelineId}/steps`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  removeStep: (pipelineId: string, stepId: string) =>
+    fetchJSON(`/api/orchestration/${pipelineId}/steps/${stepId}`, { method: 'DELETE' }),
 };
