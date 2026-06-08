@@ -129,14 +129,14 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
               title="Go to pump.fun"
               aria-label="Go to pump.fun"
             >
-              {/* pump.fun pill logo (exact match) */}
-              <svg width="16" height="16" viewBox="0 0 600 600" fill="none">
-                <circle cx="300" cy="300" r="270" fill="#132E27"/>
-                <path d="M165 165L300 300L435 165L300 435L165 165Z" fill="#56C58A"/>
-                <path d="M165 435L300 300L435 435L300 435L165 435Z" fill="#44A077"/>
-                <path d="M170 255C180 240 200 240 210 255C220 270 210 290 195 290C180 290 170 270 170 255Z" fill="white"/>
-                <path d="M200 340C215 330 230 340 225 355C220 370 195 365 200 340Z" fill="white"/>
-                <path d="M175 320C180 315 190 315 195 320C200 325 195 335 185 335C175 335 170 325 175 320Z" fill="white"/>
+              {/* Exact pump.fun pill logo */}
+              <svg width="16" height="16" viewBox="0 0 512 512" fill="none">
+                <path d="M256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48Z" fill="#132E27"/>
+                <path d="M180 180L256 256L332 180L256 332L180 180Z" fill="#56C58A"/>
+                <path d="M180 332L256 256L332 332L256 332L180 332Z" fill="#44A077"/>
+                <path d="M185 240C195 230 210 230 220 240C230 250 220 265 207 265C195 265 185 250 185 240Z" fill="white"/>
+                <path d="M205 300C217 292 227 300 222 312C217 325 197 320 205 300Z" fill="white"/>
+                <path d="M187 285C191 281 199 281 203 285C207 289 202 297 193 297C184 297 183 289 187 285Z" fill="white"/>
               </svg>
             </a>
             <WalletButton />
