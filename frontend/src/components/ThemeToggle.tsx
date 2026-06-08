@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { ThemeMode } from '../services/api';
 import { Sun, Moon, Monitor } from 'lucide-react';
 

@@ -585,8 +585,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                             placeholder="Define agent behavior, personality, and constraints..."
                             className="w-full h-40 bg-transparent border-0 text-sm font-mono resize-none focus:outline-none"
                             style={{
-                              color: 'var(--text-secondary)',
-                              placeholderColor: 'var(--text-muted)'
+                              color: 'var(--text-secondary)'
                             }}
                           />
                         </motion.div>
@@ -848,8 +847,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                   placeholder="Enter command..."
                   className="flex-1 bg-transparent border-0 text-xs focus:outline-none font-mono"
                   style={{
-                    color: 'var(--text-primary)',
-                    placeholderColor: 'var(--text-muted)'
+                    color: 'var(--text-primary)'
                   }}
                 />
                 <button

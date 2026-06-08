@@ -46,8 +46,7 @@ export default function AgentCard({ agent, onClick, index }: AgentCardProps) {
               <h3 
                 className="text-sm font-medium transition-colors"
                 style={{ 
-                  color: 'var(--text-primary)',
-                  '--hover-color': 'var(--accent)'
+                  color: 'var(--text-primary)'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-primary)'}

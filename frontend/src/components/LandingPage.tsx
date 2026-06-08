@@ -1,14 +1,14 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Code, Terminal, Zap, BarChart3, GitBranch } from 'lucide-react';
+import { motion, type Variants } from 'framer-motion';
+import { ArrowRight, Code, Zap, BarChart3, GitBranch } from 'lucide-react';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', mass: 0.5, damping: 18 } }
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, mass: 0.5, damping: 18 } }
 };
 
 export default function LandingPage({ onEnter }: { onEnter: () => void }) {

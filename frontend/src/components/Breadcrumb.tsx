@@ -1,5 +1,4 @@
 import { ChevronRight, Home } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface BreadcrumbItem {
   label: string;

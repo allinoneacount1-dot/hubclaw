@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import type { AnalyticsData } from '../services/api';
 import { 
   ArrowLeft, TrendingUp, Clock, CheckCircle, XCircle, BarChart3, 
-  Zap, Activity, PieChart, Target, Award
+  Zap, Activity, Target, Award
 } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -96,7 +96,7 @@ export default function AnalyticsView({ onBack }: AnalyticsViewProps) {
     { name: 'Error', value: errorCount, color: '#ef4444' }
   ];
   const totalTokens = data?.tokenTrends.reduce((a, b) => a + b.tokens, 0) || 0;
-  const avgLatency = data?.latencyMatrix.length > 0
+  const avgLatency = data && data.latencyMatrix && data.latencyMatrix.length > 0
     ? Math.round(data.latencyMatrix.reduce((a, b) => a + b.latency, 0) / data.latencyMatrix.length)
     : 0;
 
@@ -434,7 +434,7 @@ export default function AnalyticsView({ onBack }: AnalyticsViewProps) {
                       className="text-[10px] font-mono"
                       style={{ color: 'var(--text-muted)' }}
                     >
-                      {new Date(log.timestamp).toLocaleTimeString()}
+                      {log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : ''}
                     </span>
                   </motion.div>
                 ))}

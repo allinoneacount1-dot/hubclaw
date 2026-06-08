@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Agent, OrchestrationPipeline, ChatMessage, ConversationBranch } from '../services/api';
+import type { Agent, OrchestrationPipeline } from './services/api';
+
+interface PipelineStep {
+  id: string;
+  agentId: string;
+  agentName: string;
+  input: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+}
 
 interface AppState {
   // Theme
@@ -85,7 +93,7 @@ export const useAppStore = create<AppState>()(
                 ? {
                     ...p,
                     status: 'completed',
-                    steps: p.steps.map((s) => ({ ...s, status: 'completed' })),
+                    steps: p.steps.map((s: PipelineStep) => ({ ...s, status: 'completed' })),
                   }
                 : p
             ),
@@ -118,7 +126,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           pipelines: state.pipelines.map((p) =>
             p.id === pipelineId
-              ? { ...p, steps: p.steps.filter((s) => s.id !== stepId) }
+              ? { ...p, steps: p.steps.filter((s: PipelineStep) => s.id !== stepId) }
               : p
           ),
         }));
