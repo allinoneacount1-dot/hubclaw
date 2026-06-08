@@ -46,7 +46,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden">
+        <div className="modal-overlay">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -55,8 +55,7 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
             onClick={onClose}
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--bg-primary) 85%, transparent)',
-              zIndex: 9998
+              backgroundColor: 'color-mix(in srgb, var(--bg-primary) 85%, transparent)'
             }}
           />
 
@@ -65,11 +64,10 @@ export default function CreateAgentModal({ isOpen, onClose, onCreate, initialDat
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border"
+            className="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border"
             style={{
               backgroundColor: 'var(--bg-secondary)',
-              borderColor: 'var(--border-color)',
-              zIndex: 9999
+              borderColor: 'var(--border-color)'
             }}
           >
             {/* Header */}

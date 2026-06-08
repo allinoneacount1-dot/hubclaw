@@ -18,7 +18,7 @@ export function CustomWalletModal({ isOpen, onClose }: CustomWalletModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden">
+        <div className="modal-overlay">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -26,7 +26,6 @@ export function CustomWalletModal({ isOpen, onClose }: CustomWalletModalProps) {
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            style={{ zIndex: 9998 }}
           />
 
           {/* Modal */}
@@ -34,11 +33,10 @@ export function CustomWalletModal({ isOpen, onClose }: CustomWalletModalProps) {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md rounded-2xl border p-6"
+            className="modal-content w-full max-w-md rounded-2xl border p-6"
             style={{
               backgroundColor: 'var(--bg-primary)',
-              borderColor: 'var(--border-color)',
-              zIndex: 9999
+              borderColor: 'var(--border-color)'
             }}
           >
             {/* Header */}

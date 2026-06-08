@@ -173,16 +173,16 @@ export default function Dashboard({ onAgentClick, onAnalyticsClick, onPromptsCli
               <Plus size={14} />
               Initialize
             </button>
-            
-            {/* Create Agent Modal */}
-            <CreateAgentModal 
-              isOpen={isCreateModalOpen}
-              onClose={() => setIsCreateModalOpen(false)}
-              onCreate={handleCreateAgent}
-            />
           </div>
         </div>
       </header>
+
+      {/* Create Agent Modal */}
+      <CreateAgentModal 
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateAgent}
+      />
 
       {/* Global Navigation */}
       <div className="max-w-7xl mx-auto px-6 py-4">
