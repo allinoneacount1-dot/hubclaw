@@ -838,15 +838,15 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
             </div>
 
             {/* Input */}
-            <div className="px-5 py-4 border-t" style={{ borderTopColor: 'var(--border-color)' }}>
-              <div className="flex items-center gap-3">
+            <div className="px-4 py-2 border-t" style={{ borderTopColor: 'var(--border-color)' }}>
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRun()}
                   placeholder="Enter command..."
-                  className="flex-1 bg-transparent border-0 text-sm focus:outline-none font-mono"
+                  className="flex-1 bg-transparent border-0 text-xs focus:outline-none font-mono"
                   style={{
                     color: 'var(--text-primary)',
                     placeholderColor: 'var(--text-muted)'
@@ -855,7 +855,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                 <button
                   onClick={handleRun}
                   disabled={isRunning || !input.trim()}
-                  className="p-2 rounded-md border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
                     borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
@@ -870,7 +870,7 @@ export default function CommandCenter({ agent, onBack }: CommandCenterProps) {
                     e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--accent) 10%, transparent)';
                   }}
                 >
-                  {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+                  {isRunning ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
                 </button>
               </div>
             </div>
