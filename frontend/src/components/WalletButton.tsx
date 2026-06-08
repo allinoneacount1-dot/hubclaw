@@ -1,8 +1,47 @@
 import React from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { motion } from 'framer-motion';
+import { Wallet } from 'lucide-react';
+
+const CustomWalletButton = () => {
+  const { publicKey, disconnect, wallets, select } = useWallet();
+  const { setVisible } = useWalletModal();
+
+  const handleClick = () => {
+    if (publicKey) {
+      disconnect();
+    } else {
+      if (wallets.length === 1) {
+        select(wallets[0].adapter.name);
+      } else {
+        setVisible(true);
+      }
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="px-4 py-2 text-sm border rounded-full transition-all duration-300 flex items-center gap-2 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      style={{
+        backgroundColor: 'var(--bg-tertiary)',
+        borderColor: 'var(--border-color)',
+        color: 'var(--text-secondary)',
+      }}
+    >
+      <Wallet size={16} />
+      {publicKey ? (
+        <span className="font-mono">
+          {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+        </span>
+      ) : (
+        <span>Connect Wallet</span>
+      )}
+    </button>
+  );
+};
 
 export function WalletButton() {
   const { publicKey } = useWallet();
@@ -29,16 +68,18 @@ export function WalletButton() {
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="text-xs font-mono px-3 py-1.5 rounded-full border"
+          className="text-xs font-mono px-3 py-1.5 rounded-full border flex items-center gap-1"
           style={{
+            backgroundColor: 'var(--bg-tertiary)',
             borderColor: 'var(--border-color)',
             color: 'var(--text-secondary)',
           }}
         >
-          {balance.toFixed(2)} SOL
+          <span className="text-[var(--accent)]">◎</span>
+          {balance.toFixed(2)}
         </motion.div>
       )}
-      <WalletMultiButton />
+      <CustomWalletButton />
     </div>
   );
 }
