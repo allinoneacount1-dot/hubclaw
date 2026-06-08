@@ -13,11 +13,7 @@ const CustomWalletButton = () => {
     if (publicKey) {
       disconnect();
     } else {
-      if (wallets.length === 1) {
-        select(wallets[0].adapter.name);
-      } else {
-        setVisible(true);
-      }
+      setVisible(true);
     }
   };
 

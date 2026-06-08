@@ -23,19 +23,23 @@ export default function OrchestrationPage({
   return (
     <motion.div
       {...pageTransition}
-      className="min-h-screen bg-slate-950"
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
     >
-      <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
+      <div className="sticky top-0 z-20 backdrop-blur-md border-b" style={{
+        backgroundColor: 'color-mix(in srgb, var(--bg-primary) 80%, transparent)',
+        borderColor: 'var(--border-color)'
+      }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors" aria-label="Back to Dashboard">
+          <button onClick={onBack} className="flex items-center gap-2 text-sm transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }} aria-label="Back to Dashboard">
             <ArrowLeft size={16} />
             <span className="font-mono text-xs">Back</span>
           </button>
           <div className="flex items-center gap-2">
-            <GitBranch size={16} className="text-cyan-400" />
-            <h2 className="text-sm font-medium text-slate-300">Multi-Agent Orchestration</h2>
+            <GitBranch size={16} style={{ color: 'var(--accent)' }} />
+            <h2 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Multi-Agent Orchestration</h2>
           </div>
-          <span className="text-xs font-mono text-slate-500">{pipelines.length} pipelines</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{pipelines.length} pipelines</span>
         </div>
       </div>
 

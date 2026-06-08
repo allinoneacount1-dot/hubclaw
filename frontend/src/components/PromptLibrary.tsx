@@ -87,19 +87,23 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
   return (
     <motion.div
       {...pageTransition}
-      className="min-h-screen bg-slate-950"
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
     >
-      <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/30">
+      <div className="sticky top-0 z-20 backdrop-blur-md border-b" style={{
+        backgroundColor: 'color-mix(in srgb, var(--bg-primary) 80%, transparent)',
+        borderColor: 'var(--border-color)'
+      }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400 transition-colors" aria-label="Back to Dashboard">
+          <button onClick={onBack} className="flex items-center gap-2 text-sm transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }} aria-label="Back to Dashboard">
             <ArrowLeft size={16} />
             <span className="font-mono text-xs">Back</span>
           </button>
           <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-cyan-400" />
-            <h2 className="text-sm font-medium text-slate-300">Prompt Library</h2>
+            <BookOpen size={16} style={{ color: 'var(--accent)' }} />
+            <h2 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Prompt Library</h2>
           </div>
-          <span className="text-xs font-mono text-slate-500">{prompts.length} templates</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{prompts.length} templates</span>
         </div>
       </div>
 
@@ -107,19 +111,28 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
         <Breadcrumb items={[{ label: 'Dashboard', onClick: onBack }, { label: 'Prompt Library' }]} />
         <div className="flex items-center gap-4 mt-6 mb-6">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search prompts by name, content, or tags..."
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-900/30 border border-slate-800/30 rounded-lg text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/30"
+              className="w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:w-full transition-all"
+              style={{
+                backgroundColor: 'var(--bg-tertiary)',
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-primary)'
+              }}
               aria-label="Search prompts"
             />
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="px-4 py-2.5 text-sm text-cyan-400 border border-cyan-400/30 rounded-lg hover:bg-cyan-400/10 transition-all flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2.5 text-sm border rounded-lg hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all flex items-center gap-1.5 shrink-0"
+            style={{
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-secondary)'
+            }}
             aria-label="Create new prompt"
           >
             <Plus size={14} />
@@ -132,11 +145,21 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-3 py-1.5 text-xs font-mono rounded-full transition-all ${
-                category === cat
-                  ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/30'
-                  : 'bg-slate-900/30 text-slate-500 border border-slate-800/30 hover:text-slate-300'
-              }`}
+              className="px-3 py-1.5 text-xs font-mono rounded-full transition-all"
+              style={category === cat
+                ? {
+                    backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)',
+                    border: '1px solid',
+                    color: 'var(--accent)'
+                  }
+                : {
+                    backgroundColor: 'var(--bg-tertiary)',
+                    borderColor: 'var(--border-color)',
+                    border: '1px solid',
+                    color: 'var(--text-muted)'
+                  }
+              }
             >
               {cat}
             </button>
@@ -149,20 +172,34 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-6 rounded-lg border border-cyan-400/20 bg-slate-900/50 p-5 space-y-3"
+              className="mb-6 rounded-lg border p-5 space-y-3"
+              style={{
+                backgroundColor: 'var(--bg-tertiary)',
+                borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)'
+              }}
             >
               <input
                 type="text"
                 value={newPrompt.name}
                 onChange={(e) => setNewPrompt(p => ({ ...p, name: e.target.value }))}
                 placeholder="Prompt name..."
-                className="w-full bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400/30"
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--bg-tertiary)',
+                  borderColor: 'var(--border-color)',
+                  color: 'var(--text-primary)'
+                }}
               />
               <div className="flex gap-3">
                 <select
                   value={newPrompt.category}
                   onChange={(e) => setNewPrompt(p => ({ ...p, category: e.target.value }))}
-                  className="bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm text-slate-300 focus:outline-none"
+                  className="border rounded-md px-3 py-2 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--bg-tertiary)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-primary)'
+                  }}
                 >
                   {CATEGORIES.filter(c => c !== 'All').map(c => (
                     <option key={c} value={c}>{c}</option>
@@ -173,18 +210,34 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
                   value={newPrompt.tags}
                   onChange={(e) => setNewPrompt(p => ({ ...p, tags: e.target.value }))}
                   placeholder="tags (comma separated)..."
-                  className="flex-1 bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none"
+                  className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: 'var(--bg-tertiary)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-primary)'
+                  }}
                 />
               </div>
               <textarea
                 value={newPrompt.content}
                 onChange={(e) => setNewPrompt(p => ({ ...p, content: e.target.value }))}
                 placeholder="Prompt content..."
-                className="w-full h-24 bg-slate-900/50 border border-slate-800/30 rounded-md px-3 py-2 text-sm font-mono text-slate-300 placeholder:text-slate-600 focus:outline-none resize-none"
+                className="w-full h-24 border rounded-md px-3 py-2 text-sm font-mono focus:outline-none resize-none"
+                style={{
+                  backgroundColor: 'var(--bg-tertiary)',
+                  borderColor: 'var(--border-color)',
+                  color: 'var(--text-primary)'
+                }}
               />
               <div className="flex gap-2 justify-end">
-                <button onClick={() => setShowCreate(false)} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
-                <button onClick={handleCreate} className="px-4 py-1.5 text-xs bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 rounded-md hover:bg-cyan-400/30 transition-all">Save Prompt</button>
+                <button onClick={() => setShowCreate(false)} className="px-3 py-1.5 text-xs transition-colors" style={{ color: 'var(--text-muted)' }}>Cancel</button>
+                <button onClick={handleCreate} className="px-4 py-1.5 text-xs border rounded-md hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all"
+                  style={{
+                    backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)',
+                    color: 'var(--accent)'
+                  }}
+                >Save Prompt</button>
               </div>
             </motion.div>
           )}
@@ -197,29 +250,35 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, type: 'spring', mass: 0.5, damping: 18 }}
-              className="group rounded-lg border border-slate-800/30 bg-slate-900/30 backdrop-blur-md p-4 hover:border-cyan-400/20 transition-all"
+              className="group rounded-lg border backdrop-blur-md p-4 hover:border-[var(--accent)] transition-all"
+              style={{
+                backgroundColor: 'var(--bg-tertiary)',
+                borderColor: 'var(--border-color)'
+              }}
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <FolderOpen size={14} className="text-cyan-400/60" />
-                  <h3 className="text-sm font-medium text-slate-200">{prompt.name}</h3>
-                  {prompt.isBuiltIn && <Star size={10} className="text-amber-400/60" />}
+                  <FolderOpen size={14} style={{ color: 'color-mix(in srgb, var(--accent) 60%, transparent)' }} />
+                  <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{prompt.name}</h3>
+                  {prompt.isBuiltIn && <Star size={10} style={{ color: 'color-mix(in srgb, orange 60%, transparent)' }} />}
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleCopy(prompt.content, prompt.id)}
-                    className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-cyan-400 transition-all"
+                    className="p-1 rounded transition-all"
                     title="Copy"
                     aria-label="Copy prompt"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     {copied === prompt.id ? <Check size={12} /> : <Copy size={12} />}
                   </button>
                   {onSelect && (
                     <button
                       onClick={() => onSelect(prompt.content)}
-                      className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-cyan-400 transition-all"
+                      className="p-1 rounded transition-all"
                       title="Use this prompt"
                       aria-label="Use prompt"
+                      style={{ color: 'var(--text-muted)' }}
                     >
                       <Plus size={12} />
                     </button>
@@ -227,9 +286,10 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
                   {!prompt.isBuiltIn && (
                     <button
                       onClick={() => handleDelete(prompt.id)}
-                      className="p-1 rounded hover:bg-slate-800/50 text-slate-500 hover:text-red-400 transition-all"
+                      className="p-1 rounded transition-all"
                       title="Delete"
                       aria-label="Delete prompt"
+                      style={{ color: 'var(--text-muted)' }}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -238,19 +298,26 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
               </div>
 
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800/50 text-slate-500 border border-slate-800/30">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
+                  style={{
+                    backgroundColor: 'var(--bg-tertiary)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-muted)'
+                  }}
+                >
                   {prompt.category}
                 </span>
                 {prompt.tags.slice(0, 3).map(tag => (
-                  <span key={tag} className="text-[10px] font-mono text-slate-600 flex items-center gap-0.5">
+                  <span key={tag} className="text-[10px] font-mono flex items-center gap-0.5" style={{ color: 'var(--text-muted)' }}>
                     <Tag size={8} />{tag}
                   </span>
                 ))}
               </div>
 
               <p
-                className="text-xs text-slate-500 font-mono cursor-pointer hover:text-slate-400 transition-colors"
+                className="text-xs font-mono cursor-pointer transition-colors"
                 onClick={() => setExpandedPrompt(expandedPrompt === prompt.id ? null : prompt.id)}
+                style={{ color: 'var(--text-muted)' }}
               >
                 {expandedPrompt === prompt.id ? prompt.content : prompt.content.slice(0, 100) + (prompt.content.length > 100 ? '...' : '')}
               </p>
@@ -259,7 +326,7 @@ export default function PromptLibrary({ onBack, onSelect }: PromptLibraryProps) 
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-16 text-slate-600 text-sm font-mono">
+          <div className="text-center py-16 text-sm font-mono" style={{ color: 'var(--text-muted)' }}>
             No prompts found. Try a different search or category.
           </div>
         )}
