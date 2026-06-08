@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Wallet } from 'lucide-react';
 
 const CustomWalletButton = () => {
-  const { publicKey, disconnect, wallets, select } = useWallet();
+  const { publicKey, disconnect } = useWallet();
   const { setVisible } = useWalletModal();
 
   const handleClick = () => {
