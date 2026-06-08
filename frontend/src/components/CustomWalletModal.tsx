@@ -30,9 +30,9 @@ export function CustomWalletModal({ isOpen, onClose }: CustomWalletModalProps) {
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: -50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: -50 }}
             className="relative z-10 w-full max-w-md rounded-2xl border p-6"
             style={{
               backgroundColor: 'var(--bg-primary)',
